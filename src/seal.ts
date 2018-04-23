@@ -2,7 +2,7 @@ import {
     Top,
 } from "./types";
 
-type Seal = {};    
+type Seal = {};
 
 const sealStore: WeakMap<object,Top> = new WeakMap();
 

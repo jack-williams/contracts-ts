@@ -24,8 +24,6 @@ for(let i = 0; i < 1000; i++) {
     if(i < 999) {
         add(3,4);
     } else {
-        add(false,3);        
+        add(false,3);
     }
 }
-
-

@@ -45,7 +45,7 @@ function checkFunction<X>(v: X, p: B.BlameNode, type: T.FunctionType): X {
         check(v, B.extend(B.negate(p), B.makeDomainRoute(n, i)), type.argumentTypes[n]);
     const wrapRet = <X>(i: number, v: X) =>
         check(v, B.extend(p, B.makeCodomainRoute(i)), type.returnType);
-    
+
     if(typeof v === "object" || typeof v === "function") {
         const argHandler = <X>(i: number, args: X[]) => {
             if(args.length !== type.argumentTypes.length) {

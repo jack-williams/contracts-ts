@@ -40,13 +40,13 @@ type IntegerMap<A> = {[i: number]: A | undefined};
 interface EmptyRouteMap<A> {
     value: A | undefined;
     [RouteKind.Domain]: undefined;
-    [RouteKind.Codomain]: undefined;    
+    [RouteKind.Codomain]: undefined;
 }
 
 interface TotalRouteMap<A> {
     value: A | undefined;
     [RouteKind.Domain]: (IntegerMap<RouteMap<A>>)[];
-    [RouteKind.Codomain]: IntegerMap<RouteMap<A>>;    
+    [RouteKind.Codomain]: IntegerMap<RouteMap<A>>;
 }
 
 type RouteMap<A> = (EmptyRouteMap<A> | TotalRouteMap<A>);
@@ -306,7 +306,7 @@ function resolvePositiveBranch(node: BranchNode): boolean {
         case C.TypeKind.Union:
             const otherInfo = node.info.flip;
             if(otherInfo.blameState.value === true) {
-                return assign(getParent(node));                
+                return assign(getParent(node));
             }
             return false;
     }
@@ -345,7 +345,7 @@ function resolveNegativeBranch(node: BranchNode): boolean {
 
 function resolve(node: BlameNode): boolean {
     if("parent" in node) {
-        return node.info.charge ? resolvePositiveBranch(node) : resolveNegativeBranch(node) 
+        return node.info.charge ? resolvePositiveBranch(node) : resolveNegativeBranch(node)
     }
     return true;
 }
@@ -371,7 +371,7 @@ function brancheNodeToString(branch: BranchNode): string {
     const dirString = branch.info.direction === Direction.Left ? "<|" : "|>";
     const parentStr = nodeToString(branch.parent);
     return `${parentStr} :: ${dirString}^${chargeToString(branch.info.charge)} . ${pathToString(branch.path)}`;
-    
+
 }
 
 export function nodeToString(node: BlameNode): string {
