@@ -53,7 +53,7 @@ export interface Variable {
 export interface GenaratedName {
     kind: TypeKind.Variable;
     id: GenId;
-    contravariant: boolean;
+    covariant: boolean;
 }
 
 export function isName(i: Variable | GenaratedName): i is GenaratedName {
@@ -104,32 +104,32 @@ export function makeVariable(id: Ident): Variable {
     return {kind: TypeKind.Variable, id};
 }
 
-export function makeName(id: GenId, contravariant: boolean): GenaratedName  {
-    return {kind: TypeKind.Variable, id, contravariant};
+export function makeName(id: GenId, covariant: boolean): GenaratedName  {
+    return {kind: TypeKind.Variable, id, covariant};
 }
 
-function substituteWithVariance(t: ContractType, i: Ident, n: GenId, contravariant: boolean): ContractType {
+function substituteWithVariance(t: ContractType, i: Ident, n: GenId, covariant: boolean): ContractType {
     switch(t.kind) {
         case TypeKind.Function:
             return makeFunctionType(
-                t.argumentTypes.map(t1 => substituteWithVariance(t1, i, n, !contravariant)),
-                substituteWithVariance(t.returnType, i, n, contravariant));
+                t.argumentTypes.map(t1 => substituteWithVariance(t1, i, n, !covariant)),
+                substituteWithVariance(t.returnType, i, n, covariant));
         case TypeKind.Intersection:
             return makeIntersectionType(
-                substituteWithVariance(t.left, i, n, contravariant),
-                substituteWithVariance(t.right, i, n, contravariant));
+                substituteWithVariance(t.left, i, n, covariant),
+                substituteWithVariance(t.right, i, n, covariant));
         case TypeKind.Union:
             return makeUnionType(
-                substituteWithVariance(t.left, i, n, contravariant),
-                substituteWithVariance(t.right, i, n, contravariant));
+                substituteWithVariance(t.left, i, n, covariant),
+                substituteWithVariance(t.right, i, n, covariant));
         case TypeKind.And:
             return makeAndType(
-                substituteWithVariance(t.left, i, n, contravariant),
-                substituteWithVariance(t.right, i, n, contravariant));
+                substituteWithVariance(t.left, i, n, covariant),
+                substituteWithVariance(t.right, i, n, covariant));
         case TypeKind.Forall:
-            return t.binder === i ? t : makeForallType(t.binder, substituteWithVariance(t.body, i, n, contravariant));
+            return t.binder === i ? t : makeForallType(t.binder, substituteWithVariance(t.body, i, n, covariant));
         case TypeKind.Variable:
-            return t.id === i ? makeName(n, contravariant) : t;
+            return t.id === i ? makeName(n, covariant) : t;
         case TypeKind.Flat:
         case TypeKind.Any:
             return t;

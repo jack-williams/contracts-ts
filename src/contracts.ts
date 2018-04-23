@@ -64,10 +64,10 @@ function checkForall<X>(v: X, p: B.BlameNode, type: T.ForallType): X {
 
 function checkVariable<X>(v: X, p: B.BlameNode, type: T.Variable | T.GenaratedName): X {
     if(T.isName(type)) {
-        if(type.contravariant) {
-            // seal;
-        } else {
+        if(type.covariant) {
             // unseal;
+        } else {
+            // seal;
         }
     }
     return v;
