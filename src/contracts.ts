@@ -2,6 +2,7 @@ import * as T from "./contractTypes";
 import * as C from './checks';
 import * as M from './monitors';
 import * as B from './blame';
+import * as S from './seal';
 
 
 export function check<X>(v: X, p: B.BlameNode, type: T.ContractType): X {
@@ -23,20 +24,25 @@ export function check<X>(v: X, p: B.BlameNode, type: T.ContractType): X {
     }
 }
 
-function handleBlame(resolvedToTop: boolean): void  {
-    if(resolvedToTop) {
-        throw new Error("blame");
+function handleBlame(p: B.BlameNode): (resolvedToTop: boolean) => void  {
+    return (resolvedToTop: boolean) => {
+        if(resolvedToTop) {
+            console.log(B.nodeToString(p));
+            throw new Error("blame");
+        }
     }
 }
 
 function checkFlat<X>(v: X, p: B.BlameNode, type: T.FlatType): X {
     const spec = C.specMap[type.spec];
-    if(spec(v)) {
-        return v;
+    const f = (val: any) => {
+        if(spec(val)) {
+            return val;
+        }
+        B.blame(p, handleBlame(p));
+        return val;
     }
-    console.log(B.nodeToString(p));
-    B.blame(p, (b) => { if(b) { console.log("blamed " + B.nodeToString(p)); } handleBlame(b) });
-    return v;
+    return S.applyNonParametricContract(v, p, f);
 }
 
 function checkFunction<X>(v: X, p: B.BlameNode, type: T.FunctionType): X {
@@ -62,15 +68,12 @@ function checkForall<X>(v: X, p: B.BlameNode, type: T.ForallType): X {
     return check(v, p, T.forallConversion(type));
 }
 
-function checkVariable<X>(v: X, p: B.BlameNode, type: T.Variable | T.GenaratedName): X {
+function checkVariable(v: any, p: B.BlameNode, type: T.Variable | T.GenaratedName): any {
     if(T.isName(type)) {
-        if(type.covariant) {
-            // unseal;
-        } else {
-            // seal;
-        }
+        const op = type.covariant ? S.unseal : S.seal;
+        return op(v, type.id, p);
     }
-    return v;
+    return v; // Should never happen.
 }
 
 function checkBranching<B extends T.BranchKind, X>(v: X, p: B.BlameNode, type: T.BranchType<B>): X {

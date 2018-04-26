@@ -37,7 +37,6 @@ export interface BranchType<Kind extends BranchKind> {
 }
 
 type Ident = string;
-type GenId = number & {__id: any};
 
 export interface ForallType {
     kind: TypeKind.Forall;
@@ -52,12 +51,12 @@ export interface Variable {
 
 export interface GenaratedName {
     kind: TypeKind.Variable;
-    id: GenId;
+    id: symbol;
     covariant: boolean;
 }
 
 export function isName(i: Variable | GenaratedName): i is GenaratedName {
-    return ("contravariant" in i);
+    return typeof i.id === "symbol";
 }
 
 export interface AnyType {
@@ -104,11 +103,11 @@ export function makeVariable(id: Ident): Variable {
     return {kind: TypeKind.Variable, id};
 }
 
-export function makeName(id: GenId, covariant: boolean): GenaratedName  {
+export function makeName(id: symbol, covariant: boolean): GenaratedName  {
     return {kind: TypeKind.Variable, id, covariant};
 }
 
-function substituteWithVariance(t: ContractType, i: Ident, n: GenId, covariant: boolean): ContractType {
+function substituteWithVariance(t: ContractType, i: Ident, n: symbol, covariant: boolean): ContractType {
     switch(t.kind) {
         case TypeKind.Function:
             return makeFunctionType(
@@ -127,7 +126,8 @@ function substituteWithVariance(t: ContractType, i: Ident, n: GenId, covariant: 
                 substituteWithVariance(t.left, i, n, covariant),
                 substituteWithVariance(t.right, i, n, covariant));
         case TypeKind.Forall:
-            return t.binder === i ? t : makeForallType(t.binder, substituteWithVariance(t.body, i, n, covariant));
+            return t.binder === i ? t :
+                makeForallType(t.binder, substituteWithVariance(t.body, i, n, covariant));
         case TypeKind.Variable:
             return t.id === i ? makeName(n, covariant) : t;
         case TypeKind.Flat:
@@ -136,13 +136,10 @@ function substituteWithVariance(t: ContractType, i: Ident, n: GenId, covariant: 
     }
 }
 
-export function forallConversion(t: ForallType): ContractType  {
-    return substituteWithVariance(t.body, t.binder, freshName(), true);
+function freshName(source: string): symbol {
+    return Symbol(source);
 }
 
-const gensym: () => GenId = (() => {
-    let gensymSeed: number = 0;
-    return () => { return gensymSeed++ as GenId; }
-})();
-
-export const freshName: () => GenId = gensym;
+export function forallConversion(t: ForallType): ContractType  {
+    return substituteWithVariance(t.body, t.binder, freshName(t.binder), true);
+}

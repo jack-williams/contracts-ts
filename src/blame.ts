@@ -88,6 +88,46 @@ interface BranchNode {
 
 export type BlameNode = RootNode | BranchNode;
 
+function isBranch(p: BlameNode): p is BranchNode {
+    return "parent" in p;
+}
+
+function foldNode<A>(node: BlameNode, f: (a: A, node: BranchNode) => A, init: A): A  {
+    return isBranch(node) ? f(foldNode(node.parent, f, init), node) : init;
+}
+
+function length(node: BlameNode): number {
+    return foldNode(node, (n,_) => 1 + n, 1);
+}
+
+function shorten(n: number, node: BlameNode): BlameNode {
+    if(n <= 0) return node;
+    if(isBranch(node)) return shorten(n - 1, node.parent);
+    return node;
+}
+
+function obliviousNodes(n1: BlameNode, n2: BlameNode): boolean {
+    const l1 = length(n1);
+    const l2 = length(n2);
+    if(l2 > l1) {
+        return hasCommonBranchPoint(n1, shorten(l2 - l1, n2));
+    }
+    if(l1 > l2) {
+        return hasCommonBranchPoint(shorten(l1 - l2, n1),n2);
+    }
+    return hasCommonBranchPoint(n1,n2);
+}
+
+function hasCommonBranchPoint(n1: BlameNode, n2: BlameNode): boolean {
+    if(isBranch(n1) && isBranch(n2)) {
+        if(n1.info.flip === n2.info || n1.info.flip === n2.info.negate) {
+            return true;
+        }
+        return hasCommonBranchPoint(n1.parent, n2.parent);
+    }
+    return false;
+}
+
 function initIntMap<A>(): IntegerMap<A>  {
     return {};
 }
@@ -231,14 +271,14 @@ export function delta(node: BlameNode): number  {
 }
 
 export function extend(node: BlameNode, context: RouteInfo): BlameNode {
-    if("parent" in node) {
+    if(isBranch(node)) {
         return {parent: node.parent, info: node.info, path: node.path.concat([context])};
     }
     return {info: node.info, path: node.path.concat([context])};
 }
 
 export function negate(node: BlameNode): BlameNode {
-    if("parent" in node) {
+    if(isBranch(node)) {
         return {parent: negate(node.parent), info: node.info.negate, path: node.path};
     }
     return {info: node.info.negate, path: node.path};
@@ -292,7 +332,7 @@ function assign(node: BlameNode): boolean {
 }
 
 function getParent(branchNode: BranchNode): BlameNode {
-    if("parent" in branchNode.parent && branchNode.parent.path.length === 0) {
+    if(isBranch(branchNode.parent) && branchNode.parent.path.length === 0) {
         return makeBranchNode(branchNode.parent.parent, branchNode.parent.info, branchNode.path);
     }
     return branchNode.parent;
@@ -344,10 +384,14 @@ function resolveNegativeBranch(node: BranchNode): boolean {
 }
 
 function resolve(node: BlameNode): boolean {
-    if("parent" in node) {
+    if(isBranch(node)) {
         return node.info.charge ? resolvePositiveBranch(node) : resolveNegativeBranch(node)
     }
     return true;
+}
+
+export function areCommutable(left: BlameNode, right: BlameNode): boolean {
+    return obliviousNodes(left, right);
 }
 
 function chargeToString(charge: boolean): string {
@@ -375,7 +419,7 @@ function brancheNodeToString(branch: BranchNode): string {
 }
 
 export function nodeToString(node: BlameNode): string {
-    if("parent" in node) {
+    if(isBranch(node)) {
         return brancheNodeToString(node);
     }
     return `${node.info.label}[${chargeToString(node.info.charge)}] . ${pathToString(node.path)}`;
