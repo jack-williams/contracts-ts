@@ -289,7 +289,7 @@ export function blame<R>(node: BlameNode, withResolution: (reachedRoot: boolean)
 }
 
 function testCompatibleState(id: number, stateMap: IntegerMap<BlameState>): boolean {
-    return (stateMap[id] !== undefined) && (stateMap[id]!.value === true);
+    return (stateMap[id] !== undefined) && (stateMap[id]!.value);
 }
 
 function someCompatiblePath(n: number, path: BlamePath, blameState: BlameState): boolean {
@@ -345,7 +345,7 @@ function resolvePositiveBranch(node: BranchNode): boolean {
             return assign(getParent(node));
         case C.TypeKind.Union:
             const otherInfo = node.info.flip;
-            if(otherInfo.blameState.value === true) {
+            if(otherInfo.blameState.value) {
                 return assign(getParent(node));
             }
             return false;
