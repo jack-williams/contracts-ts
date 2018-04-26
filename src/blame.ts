@@ -289,7 +289,7 @@ export function blame<R>(node: BlameNode, withResolution: (reachedRoot: boolean)
 }
 
 function testCompatibleState(id: number, stateMap: IntegerMap<BlameState>): boolean {
-    return (stateMap[id] !== undefined) && (stateMap[id]!.value);
+    return (stateMap[id] !== undefined) && !!(stateMap[id]!.value);
 }
 
 function someCompatiblePath(n: number, path: BlamePath, blameState: BlameState): boolean {
@@ -359,9 +359,6 @@ function matchingElimination(route: RouteInfo, blameState: BlameState): boolean 
     let totalPointer: TotalRouteMap<boolean> = blameState as TotalRouteMap<boolean>;
     if(testCompatibleState(route.id, totalPointer[RouteKind.Codomain])) {
         return true;
-    }
-    if(totalPointer[RouteKind.Domain] === undefined) {
-        return false;
     }
     return totalPointer[RouteKind.Domain].some(state => testCompatibleState(route.id, state));
 }
