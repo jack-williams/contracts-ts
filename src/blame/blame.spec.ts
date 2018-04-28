@@ -18,8 +18,6 @@ describe("Blame Negation", () => {
         expect(p.info).to.
             equal(doubleNegateP.info,
                   "Node info should be the same pointer after double negation.");
-        
     });
-    
 });
 
