@@ -14,19 +14,19 @@ const NandNtoN: T.ContractType =
 const BandBtoB: T.ContractType =
     T.makeAndType(FUNCTION,T.makeFunctionType([BOOLEAN,BOOLEAN], BOOLEAN));
 
-const p = B.makeRootNode(B.makeLabel("add"));
-const q = B.makeRootNode(B.makeLabel("id"));
-const q2 = B.makeRootNode(B.makeLabel("id2"));
+const p = B.makeRootNode(B.label("add"));
+const q = B.makeRootNode(B.label("id"));
+const q2 = B.makeRootNode(B.label("id2"));
 
-const ident = T.makeForallType("X", T.makeFunctionType([X],X));
-const NtoN: T.ContractType =
-    T.makeAndType(FUNCTION,T.makeFunctionType([NUMBER], NUMBER));
+const ident = T.makeForallType("X", T.makeFunctionType([X],T.makeUnionType(X, NUMBER)));
 
-let f = (x: any) => x + 1;
+let f = (x: any) => Math.random() > 0.5 ? x : 1;
 
 
-f = check(f, p, T.makeUnionType(ident, NtoN));
+f = check(f, p, ident);
 
 
 f(32);
+f("heuu");
+f(true);
 // f(true);

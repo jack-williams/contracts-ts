@@ -27,7 +27,7 @@ export function check<X>(v: X, p: B.BlameNode, type: T.ContractType): X {
 function handleBlame(p: B.BlameNode): (resolvedToTop: boolean) => void  {
     return (resolvedToTop: boolean) => {
         if(resolvedToTop) {
-            console.log(B.nodeToString(p));
+//            console.log(B.nodeToString(p));
             throw new Error("blame");
         }
     }
@@ -46,20 +46,16 @@ function checkFlat<X>(v: X, p: B.BlameNode, type: T.FlatType): X {
 }
 
 function checkFunction<X>(v: X, p: B.BlameNode, type: T.FunctionType): X {
-    const makeContext = () => B.delta(p);
-    const wrapArg = <X>(i: number, v: X, n: number) =>
-        check(v, B.extend(B.negate(p), B.makeDomainRoute(n, i)), type.argumentTypes[n]);
-    const wrapRet = <X>(i: number, v: X) =>
-        check(v, B.extend(p, B.makeCodomainRoute(i)), type.returnType);
-
     if(typeof v === "object" || typeof v === "function") {
-        const argHandler = <X>(i: number, args: X[]) => {
+        const makeContext = () => B.makeAppNodes(p, type.argumentTypes.length);
+        const argHandler = <X>(ctx: B.ApplicationNodes, args: X[]) => {
             if(args.length !== type.argumentTypes.length) {
               // TODO: blame;
             }
-            return args.map((v,n) => wrapArg(i,v,n));
+            return args.map((v,n) => check(v, ctx.dom[n], type.argumentTypes[n]));
         }
-        return M.createFunctionMonitor(v as any, makeContext, argHandler, wrapRet);
+        const returnHandler = <X>(ctx: B.ApplicationNodes, v: X) => check(v, ctx.cod, type.returnType);
+        return M.createFunctionMonitor(v as any, makeContext, argHandler, returnHandler);
     }
     return v;
 }
