@@ -1,12 +1,16 @@
 {
-  "compilerOptions": {
-      "target": "es6",
-      "lib": ["es6", "dom"],
-      "module": "commonjs",
-      "noImplicitAny": true,
-      "removeComments": true,
-      "preserveConstEnums": true,
-      "strict": true,
-      "outDir": "./dist"
-  }
+    "compilerOptions": {
+        "target": "es6",
+        "lib": ["es6", "dom"],
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "strict": true,
+        "outDir": "./dist"
+    },
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
 }

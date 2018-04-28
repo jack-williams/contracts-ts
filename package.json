@@ -4,7 +4,8 @@
     "description": "Contracts for Higher-order Types",
     "main": "dist/index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "node node_modules/mocha/bin/mocha dist/**/*.spec.js"
+
     },
     "repository": {
         "type": "git",
@@ -18,6 +19,8 @@
     },
     "homepage": "https://github.com/jack-williams/contracts-ts#readme",
     "devDependencies": {
+        "@types/chai": "latest",
+        "@types/mocha": "latest",
         "chai": "latest",
         "mocha": "latest"
     }

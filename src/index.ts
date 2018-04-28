@@ -1,7 +1,7 @@
 import * as T from "./contractTypes";
 import * as B from "./blame";
 import * as S from "./seal";
-import {check} from "./contracts";
+import { check } from "./contracts";
 
 const NUMBER = T.makeFlatType(T.FlatSpec.Number);
 const FUNCTION = T.makeFlatType(T.FlatSpec.Function);
