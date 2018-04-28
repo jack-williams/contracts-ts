@@ -26,11 +26,7 @@ function resolvePositiveBranch(node: BranchNode): boolean {
         case TypeKind.And:
             return assign(parent(node));
         case TypeKind.Union:
-            const otherInfo = node.info.flip;
-            if(otherInfo.blameState.value) {
-                return assign(parent(node));
-            }
-            return false;
+            return node.info.flip.blameState.value ? assign(parent(node)) : false;
     }
 }
 
@@ -44,10 +40,8 @@ function resolveNegativeBranch(node: BranchNode): boolean {
             if(node.path.length === 0) {
                 throw new Error("assertion error: should not have negative blame on empty path");
             }
-            if(matchingElimination(node.path[0], otherInfo.blameState)) {
-                return assign(parent(node));
-            }
-            return false;
+            return matchingElimination(node.path[0], otherInfo.blameState) ?
+                assign(parent(node)) : false;
     }
 }
 
