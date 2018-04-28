@@ -21,7 +21,7 @@ export type RouteInfo = DomainRoute | CodomainRoute;
 type IntegerMap<A> = { [i: number]: A | undefined };
 
 interface EmptyRouteMap<A> {
-    value: A | undefined;
+    value: undefined;
     [RouteKind.Domain]: undefined;
     [RouteKind.Codomain]: undefined;
 }
@@ -34,7 +34,11 @@ interface TotalRouteMap<A> {
 
 export type RouteMap<A> = EmptyRouteMap<A> | TotalRouteMap<A>;
 
-export function initIntMap<A>(): IntegerMap<A> {
+function isTotalRouteMap<A>(routeMap: RouteMap<A>): routeMap is TotalRouteMap<A>  {
+    return routeMap[RouteKind.Domain] !== undefined;
+}
+
+function initIntMap<A>(): IntegerMap<A> {
     return {};
 }
 
@@ -44,6 +48,13 @@ export function initRouteMap<A>(): EmptyRouteMap<A> {
         [RouteKind.Domain]: undefined,
         [RouteKind.Codomain]: undefined,
     };
+}
+
+function populateEmptyRouteMap<A>(routeMap: EmptyRouteMap<A>): TotalRouteMap<A> {
+    const totalRouteMap: TotalRouteMap<A> = routeMap as any;
+    totalRouteMap[RouteKind.Domain] = [];
+    totalRouteMap[RouteKind.Codomain] = initIntMap();
+    return totalRouteMap;
 }
 
 
@@ -71,20 +82,19 @@ function getOrInitPointer<T extends IntegerMap<Top>>(context: T, k: number, init
     return res;
 }
 
-function nextPointer<A>(context: RouteMap<A>, route: RouteInfo): RouteMap<A> {
-    if(context[RouteKind.Domain] === undefined) {
-        context[RouteKind.Domain] = [];
-        context[RouteKind.Codomain] = initIntMap();
-    }
-    let totalContext: TotalRouteMap<A> = context as TotalRouteMap<A>;
-    let result: RouteMap<A>;
+function lookupRoute<A>(context: TotalRouteMap<A>, route: RouteInfo): RouteMap<A> {
     if(route.kind === RouteKind.Domain) {
-        const argPointer = getOrInitPointer(totalContext[route.kind], route.arg, initIntMap);
-        result = getOrInitPointer(argPointer, route.id, initRouteMap);
-    } else {
-        result = getOrInitPointer(totalContext[route.kind], route.id, initRouteMap);
+        const argPointer = getOrInitPointer(context[route.kind], route.arg, initIntMap);
+        return getOrInitPointer(argPointer, route.id, initRouteMap);
     }
-    return result;
+    return getOrInitPointer(context[route.kind], route.id, initRouteMap);
+}
+
+function nextPointer<A>(context: RouteMap<A>, route: RouteInfo): RouteMap<A> {
+    if(!isTotalRouteMap(context)) {
+        return lookupRoute(populateEmptyRouteMap(context), route);
+    }
+    return lookupRoute(context, route);
 }
 
 export function modifyLeaf<A>(context: RouteMap<A>, update: (a: A | undefined) => A, path: RouteInfo[]): A | undefined  {
@@ -147,12 +157,11 @@ export function someCompatiblePath(n: number, path: RouteInfo[], blameState: Rou
 }
 
 export function matchingElimination(route: RouteInfo, blameState: RouteMap<boolean>): boolean {
-    if(blameState[RouteKind.Domain] === undefined) {
-        return false;
+    if(isTotalRouteMap(blameState)) {
+        if(getRouteValue(route, blameState[RouteKind.Codomain])) {
+            return true;
+        }
+        return blameState[RouteKind.Domain].some(state => !!getRouteValue(route, state));        
     }
-    let totalPointer: TotalRouteMap<boolean> = blameState as TotalRouteMap<boolean>;
-    if(getRouteValue(route, totalPointer[RouteKind.Codomain])) {
-        return true;
-    }
-    return totalPointer[RouteKind.Domain].some(state => !!getRouteValue(route, state));
+    return false;
 }

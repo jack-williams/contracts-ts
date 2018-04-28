@@ -14,12 +14,6 @@ import {
     matchingElimination
 } from "./contextTracking";
 
-function assign(node: BlameNode): boolean {
-    if(someCompatiblePath(0, node.path, node.info.negate.blameState)) { return false; }
-    modifyPath(node.info.blameState, () => true, node.path);
-    return resolve(node);
-}
-
 function resolvePositiveBranch(node: BranchNode): boolean {
     switch(node.info.type) {
         case TypeKind.Intersection:
@@ -36,11 +30,10 @@ function resolveNegativeBranch(node: BranchNode): boolean {
         case TypeKind.And:
             return assign(parent(node));
         case TypeKind.Intersection:
-            const otherInfo = node.info.flip;
             if(node.path.length === 0) {
                 throw new Error("assertion error: should not have negative blame on empty path");
             }
-            return matchingElimination(node.path[0], otherInfo.blameState) ?
+            return matchingElimination(node.path[0], node.info.flip.blameState) ?
                 assign(parent(node)) : false;
     }
 }
@@ -50,6 +43,12 @@ function resolve(node: BlameNode): boolean {
         return true;    
     }
     return isPositive(node) ? resolvePositiveBranch(node) : resolveNegativeBranch(node)
+}
+
+function assign(node: BlameNode): boolean {
+    if(someCompatiblePath(0, node.path, node.info.negate.blameState)) { return false; }
+    modifyPath(node.info.blameState, () => true, node.path);
+    return resolve(node);
 }
 
 export function blame<R>(node: BlameNode, withResolution: (reachedRoot: boolean) => R): R {
