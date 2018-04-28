@@ -1,4 +1,6 @@
-## =contracts-ts=
+## `contracts-ts`
 
-Contracts for higher-order types, including intersection, union, and
+Contracts for higher-order types including intersection, union, and
 parametric polymorphic types.
+
+
