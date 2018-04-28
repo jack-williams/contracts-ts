@@ -49,8 +49,13 @@ function checkFunction<X>(v: X, p: B.BlameNode, type: T.FunctionType): X {
     if(typeof v === "object" || typeof v === "function") {
         const makeContext = () => B.makeAppNodes(p, type.argumentTypes.length);
         const argHandler = <X>(ctx: B.ApplicationNodes, args: X[]) => {
-            if(args.length !== type.argumentTypes.length) {
-              // TODO: blame;
+            if(args.length > type.argumentTypes.length) {
+                B.blame(ctx.dom[type.argumentTypes.length], handleBlame(ctx.dom[type.argumentTypes.length]));
+                return args;
+            }
+            if(args.length < type.argumentTypes.length) {
+                B.blame(ctx.dom[args.length], handleBlame(ctx.dom[args.length]));
+                return args;
             }
             return args.map((v,n) => check(v, ctx.dom[n], type.argumentTypes[n]));
         }

@@ -160,10 +160,12 @@ export interface ApplicationNodes {
 }
 
 export function makeAppNodes(p: BlameNode, numberOfArgs: number): ApplicationNodes {
+    // Add an extra arg on the end for the case where too
+    // many arguments ar supplied.
     const i = delta(p);
     const dom: BlameNode[] = [];
     const negativeP = negate(p);
-    for(let argNum = 0; argNum < numberOfArgs; argNum++) {
+    for(let argNum = 0; argNum < numberOfArgs + 1; argNum++) {
         dom.push(extend(negativeP, Context.makeDomainRoute(argNum, i)));
     }
     const cod = extend(p, Context.makeCodomainRoute(i));
