@@ -20,7 +20,7 @@ function isSeal(x: Top): x is Seal  {
 }
 
 function addSealData(seal: Seal, key: symbol, owner: B.BlameNode): void {
-    if(!sealData.has(seal)) {
+    if (!sealData.has(seal)) {
         sealData.set(seal, [{key, owner}]);
         return;
     }
@@ -29,7 +29,7 @@ function addSealData(seal: Seal, key: symbol, owner: B.BlameNode): void {
 }
 
 export function seal<T>(x: T, key: symbol, owner: B.BlameNode): T {
-    if(isSeal(x)) {
+    if (isSeal(x)) {
         addSealData(x, key, owner);
         return x;
     }
@@ -41,7 +41,7 @@ export function seal<T>(x: T, key: symbol, owner: B.BlameNode): T {
 }
 
 function wrap(x: Top): Top {
-     switch(typeof x) {
+     switch (typeof x) {
          case "number":
          case "string":
          case "boolean":
@@ -118,17 +118,17 @@ function makeSealHandler(value: any, p: B.BlameNode): ProxyHandler<any> {
 }
 
 function handleBlame(resolvedToTop: boolean): void  {
-    if(resolvedToTop) {
+    if (resolvedToTop) {
         throw new Error("blame");
     }
 }
 
 export function unseal(candidate: Top, key: symbol, owner: B.BlameNode): Top {
-    if(isSeal(candidate)) {
+    if (isSeal(candidate)) {
         const sealInfo = sealData.get(candidate)!;
         const lastSealInfo = sealInfo.pop()!;
-        if(key === lastSealInfo.key) {
-            if(sealInfo.length === 0) {
+        if (key === lastSealInfo.key) {
+            if (sealInfo.length === 0) {
                 const unsealed = sealedValues.get(candidate);
                 sealedValues.delete(candidate);
                 sealData.delete(candidate);
@@ -147,18 +147,18 @@ export function unseal(candidate: Top, key: symbol, owner: B.BlameNode): Top {
 
 
 export function applyNonParametricContract(x: any, p: B.BlameNode, f: (x: any) => any) {
-    if(isSeal(x)) {
+    if (isSeal(x)) {
         const rawValue = sealedValues.get(x)!;
         const info = sealData.get(x)!;
         const newSealInfo = [];
-        for(let i = info.length - 1; i !== 0; i--) {
+        for (let i = info.length - 1; i !== 0; i--) {
             const sealInfo = info[i];
             if(B.areCommutable(sealInfo.owner, p)) {
                 newSealInfo.push(sealInfo);
             }
             B.blame(sealInfo.owner, handleBlame);
         }
-        if(newSealInfo.length === 0) {
+        if (newSealInfo.length === 0) {
             sealedValues.delete(x);
             sealData.delete(x);
             return f(rawValue);

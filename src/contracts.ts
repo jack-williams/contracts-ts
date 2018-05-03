@@ -6,7 +6,7 @@ import * as S from './seal';
 
 
 export function check<X>(v: X, p: B.BlameNode, type: T.ContractType): X {
-    switch(type.kind) {
+    switch (type.kind) {
         case T.TypeKind.Flat:
             return checkFlat(v, p, type)
         case T.TypeKind.Function:
@@ -26,7 +26,7 @@ export function check<X>(v: X, p: B.BlameNode, type: T.ContractType): X {
 
 function handleBlame(p: B.BlameNode): (resolvedToTop: boolean) => void  {
     return (resolvedToTop: boolean) => {
-        if(resolvedToTop) {
+        if (resolvedToTop) {
 //            console.log(B.nodeToString(p));
             throw new Error("blame");
         }
@@ -36,7 +36,7 @@ function handleBlame(p: B.BlameNode): (resolvedToTop: boolean) => void  {
 function checkFlat<X>(v: X, p: B.BlameNode, type: T.FlatType): X {
     const spec = C.specMap[type.spec];
     const f = (val: any) => {
-        if(spec(val)) {
+        if (spec(val)) {
             return val;
         }
         B.blame(p, handleBlame(p));
@@ -46,14 +46,14 @@ function checkFlat<X>(v: X, p: B.BlameNode, type: T.FlatType): X {
 }
 
 function checkFunction<X>(v: X, p: B.BlameNode, type: T.FunctionType): X {
-    if(typeof v === "object" || typeof v === "function") {
+    if (typeof v === "object" || typeof v === "function") {
         const makeContext = () => B.makeAppNodes(p, type.argumentTypes.length);
         const argHandler = <X>(ctx: B.ApplicationNodes, args: X[]) => {
-            if(args.length > type.argumentTypes.length) {
+            if (args.length > type.argumentTypes.length) {
                 B.blame(ctx.dom[type.argumentTypes.length], handleBlame(ctx.dom[type.argumentTypes.length]));
                 return args;
             }
-            if(args.length < type.argumentTypes.length) {
+            if (args.length < type.argumentTypes.length) {
                 B.blame(ctx.dom[args.length], handleBlame(ctx.dom[args.length]));
                 return args;
             }
@@ -70,7 +70,7 @@ function checkForall<X>(v: X, p: B.BlameNode, type: T.ForallType): X {
 }
 
 function checkVariable(v: any, p: B.BlameNode, type: T.Variable | T.GenaratedName): any {
-    if(T.isName(type)) {
+    if (T.isName(type)) {
         const op = type.covariant ? S.unseal : S.seal;
         return op(v, type.id, p);
     }

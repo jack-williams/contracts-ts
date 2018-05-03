@@ -15,17 +15,17 @@ import {
 } from "./contextTracking";
 
 function resolvePositiveBranch(node: BranchNode): boolean {
-    switch(node.info.type) {
+    switch (node.info.type) {
         case TypeKind.Intersection:
         case TypeKind.And:
             return assign(parent(node));
         case TypeKind.Union:
-            return node.info.flip.blameState.value ? assign(parent(node)) : false;
+            return !!node.info.flip.blameState.value && assign(parent(node));
     }
 }
 
 function resolveNegativeBranch(node: BranchNode): boolean {
-    switch(node.info.type) {
+    switch (node.info.type) {
         case TypeKind.Union:
         case TypeKind.And:
             return assign(parent(node));
@@ -39,16 +39,21 @@ function resolveNegativeBranch(node: BranchNode): boolean {
 }
 
 function resolve(node: BlameNode): boolean {
-    if(isRoot(node)) {
-        return true;    
-    }
-    return isPositive(node) ? resolvePositiveBranch(node) : resolveNegativeBranch(node)
+    return isRoot(node) || (isPositive(node) ? resolvePositiveBranch(node) : resolveNegativeBranch(node));
+}
+
+const setBlame = () => true;
+function blamePath(node: BlameNode): BlameNode {
+    modifyPath(node.info.blameState, setBlame, node.path);
+    return node;
 }
 
 function assign(node: BlameNode): boolean {
-    if(someCompatiblePath(0, node.path, node.info.negate.blameState)) { return false; }
-    modifyPath(node.info.blameState, () => true, node.path);
-    return resolve(node);
+    if (someCompatiblePath(0, node.path, node.info.negate.blameState)) {
+        return false;
+    }
+    // Has side-effect of setting path in blame state.
+    return resolve(blamePath(node));
 }
 
 export function blame<R>(node: BlameNode, withResolution: (reachedRoot: boolean) => R): R {

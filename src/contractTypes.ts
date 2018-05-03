@@ -108,7 +108,7 @@ export function makeName(id: symbol, covariant: boolean): GenaratedName  {
 }
 
 function substituteWithVariance(t: ContractType, i: Ident, n: symbol, covariant: boolean): ContractType {
-    switch(t.kind) {
+    switch (t.kind) {
         case TypeKind.Function:
             return makeFunctionType(
                 t.argumentTypes.map(t1 => substituteWithVariance(t1, i, n, !covariant)),
@@ -143,3 +143,4 @@ function freshName(source: string): symbol {
 export function forallConversion(t: ForallType): ContractType  {
     return substituteWithVariance(t.body, t.binder, freshName(t.binder), true);
 }
+ 

@@ -165,7 +165,7 @@ export function makeAppNodes(p: BlameNode, numberOfArgs: number): ApplicationNod
     const i = delta(p);
     const dom: BlameNode[] = [];
     const negativeP = negate(p);
-    for(let argNum = 0; argNum < numberOfArgs + 1; argNum++) {
+    for (let argNum = 0; argNum < numberOfArgs + 1; argNum++) {
         dom.push(extend(negativeP, Context.makeDomainRoute(argNum, i)));
     }
     const cod = extend(p, Context.makeCodomainRoute(i));
@@ -189,7 +189,7 @@ export function isPositive(p: BlameNode): boolean {
 //// Operations
 
 export function negate(node: BlameNode): BlameNode {
-    if(isRoot(node)) {
+    if (isRoot(node)) {
         return makeRootNodeFull(node.info.negate, node.path);
     }
     return makeBranchNode(negate(node.parent), node.info.negate, node.path);
@@ -205,14 +205,14 @@ function delta(node: BlameNode): number  {
 }
 
 function extend(node: BlameNode, context: Context.RouteInfo): BlameNode {
-    if(isRoot(node)) {
+    if (isRoot(node)) {
         return makeRootNodeFull(node.info, node.path.concat([context]));
     }
     return makeBranchNode(node.parent, node.info, node.path.concat([context]));
 }
 
 export function parent(branchNode: BranchNode): BlameNode {
-    if(isBranch(branchNode.parent) && branchNode.parent.path.length === 0) {
+    if (isBranch(branchNode.parent) && branchNode.parent.path.length === 0) {
         return makeBranchNode(branchNode.parent.parent, branchNode.parent.info, branchNode.path);
     }
     return branchNode.parent;
@@ -227,14 +227,14 @@ function length(node: BlameNode): number {
 }
 
 function shorten(n: number, node: BlameNode): BlameNode {
-    if(n <= 0) return node;
-    if(isBranch(node)) return shorten(n - 1, node.parent);
+    if (n <= 0) { return node; }
+    if (isBranch(node)) { return shorten(n - 1, node.parent); }
     return node;
 }
 
 function hasCommonBranchPoint(n1: BlameNode, n2: BlameNode): boolean {
-    if(isBranch(n1) && isBranch(n2)) {
-        if(n1.info.flip === n2.info || n1.info.flip === n2.info.negate) {
+    if (isBranch(n1) && isBranch(n2)) {
+        if (n1.info.flip === n2.info || n1.info.flip === n2.info.negate) {
             return true;
         }
         return hasCommonBranchPoint(n1.parent, n2.parent);
@@ -245,10 +245,10 @@ function hasCommonBranchPoint(n1: BlameNode, n2: BlameNode): boolean {
 function obliviousNodes(n1: BlameNode, n2: BlameNode): boolean {
     const l1 = length(n1);
     const l2 = length(n2);
-    if(l2 > l1) {
+    if (l2 > l1) {
         return hasCommonBranchPoint(n1, shorten(l2 - l1, n2));
     }
-    if(l1 > l2) {
+    if (l1 > l2) {
         return hasCommonBranchPoint(shorten(l1 - l2, n1),n2);
     }
     return hasCommonBranchPoint(n1,n2);
