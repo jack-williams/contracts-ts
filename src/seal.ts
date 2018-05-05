@@ -61,6 +61,9 @@ Wrapper.prototype.valueOf = function () {
     return this.value;
 }
 
+// TODO: I need to blame all of the nodes associated with the seal. I
+// need to basically create a pointer to the info on the seal and
+// iterate through backwards blaming them.
 function makeSealHandler(value: any, p: B.BlameNode): ProxyHandler<any> {
     return  {
         getPrototypeOf: function(target) {
@@ -184,6 +187,10 @@ export function unseal(candidate: Top, key: string, owner: B.BlameNode, scope: T
 export function applyNonParametricContract(x: any, p: B.BlameNode, f: (x: any) => any, scope: T.ScopeSet) {
     return traverseSeals(x, p, (x: any, sealInfo?:SealData) => {
         if (sealInfo === undefined) { return f(x); }
+        // TODO: not sure this blame should be here. this only really
+        // works because i assume it always fails (which it does), but
+        // this doesn't seem like the right place. I should really
+        // have a seal away typeof and use that in the flat checks.
         B.blame(p, handleBlame);
         addSealData(x, sealInfo.key, sealInfo.owner);
         return f(x);
