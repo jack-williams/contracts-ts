@@ -23,11 +23,13 @@ function checkNum<X>(x: X): X  {
 }
 
 
-const ident = T.makeForallType("X", T.makeFunctionType([NUMBER, X],T.makeUnionType(X, NUMBER)));
+const ident = T.makeForallType("X", T.makeFunctionType([NUMBER, X], T.ANY));
 
-let f = (x: any, y: any) => true;
+let f = (x: any, y: any) => y;
 
 f = contract(f, p, ident);
 
 let res = f(3, 32);
+let res2 = f(42, 3);
+f(3, 3);
 

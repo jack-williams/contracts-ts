@@ -72,6 +72,8 @@ export type ContractType =
     ForallType | Variable | GenaratedName | AnyType;
 
 
+export const ANY: AnyType = { kind: TypeKind.Any };
+
 export function makeFlatType(spec: FlatSpec): FlatType {
     return {kind: TypeKind.Flat, spec};
 }
@@ -140,7 +142,7 @@ function substituteWithVariance(t: ContractType, i: Ident, n: GeneratedId, covar
 let idGen = 0;
 function freshName(source: string): GeneratedId {
     idGen++;
-    return `${source}_{idGen}`;
+    return `${source}_${idGen}`;
 }
 
 export function forallConversion(t: ForallType): [ContractType, GeneratedId]  {

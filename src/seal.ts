@@ -41,6 +41,17 @@ export function seal<T>(x: T, key: string, owner: B.BlameNode): T {
     return seal;
 }
 
+function reseal(oldSeal: Seal, newVal: any, newSealInfo: NonEmptyArray<SealData>): Seal {
+    sealedValues.delete(oldSeal);
+    sealData.delete(oldSeal);
+    const coffer: any = () => undefined;
+    // Todo: get rid of this undefined;
+    const seal = new Proxy(coffer, makeSealHandler(wrap(newVal), undefined as any));
+    sealedValues.set(seal,newVal);
+    sealData.set(seal, newSealInfo);
+    return seal;
+}
+
 function wrap(x: Top): Top {
      switch (typeof x) {
          case "number":
@@ -157,13 +168,10 @@ export function traverseSeals(x: any, p: B.BlameNode, f: (x: any, info?: SealDat
         if (newSealData.length === 0) {
             sealedValues.delete(x);
             sealData.delete(x);
+            return result;
         }
-        else {
-            sealData.set(x,newSealData as NonEmptyArray<SealData>);
-        }
-        return result;
+        return reseal(x, result, newSealData as NonEmptyArray<SealData>);
     }
-    console.log("no seal found");
     return f(x);
 }
 

@@ -49,10 +49,14 @@ function checkFlat<X>(v: X, p: B.BlameNode, type: T.FlatType, scope: T.ScopeSet)
 }
 
 function checkFunction<X>(v: X, p: B.BlameNode, type: T.FunctionType, scope: T.ScopeSet): X {
+    return S.applyNonParametricContract(v, p, <X>(x: X) => wrapFunction(x, p, type, scope), scope);
+}
+
+function wrapFunction<X>(v: X, p: B.BlameNode, type: T.FunctionType, scope: T.ScopeSet): X {
     if (typeof v === "object" || typeof v === "function") {
         const makeContext = () => B.makeAppNodes(p, type.argumentTypes.length);
+        const invertedScope = T.invertScopeSet(scope);
         const argHandler = <X>(ctx: B.ApplicationNodes, args: X[]) => {
-            const invertedScope = T.invertScopeSet(scope);
             if (args.length > type.argumentTypes.length) {
                 B.blame(ctx.dom[type.argumentTypes.length], handleBlame(ctx.dom[type.argumentTypes.length]));
                 return args;
@@ -79,7 +83,6 @@ function checkVariable(v: any, p: B.BlameNode, type: T.Variable | T.GenaratedNam
         if(type.covariant) {
             return S.unseal(v, type.id, p, scope);
         }
-        console.log('sealing');
         return S.seal(v, type.id, B.negate(p));
     }
     return v; // Should never happen.
