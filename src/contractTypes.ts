@@ -49,14 +49,15 @@ export interface Variable {
     id: Ident;
 }
 
+export type GeneratedId = string;
 export interface GenaratedName {
     kind: TypeKind.Variable;
-    id: symbol;
+    id: GeneratedId;
     covariant: boolean;
 }
 
 export function isName(i: Variable | GenaratedName): i is GenaratedName {
-    return typeof i.id === "symbol";
+    return typeof i.id === "string" && (i as GenaratedName)["covariant"] !== undefined;
 }
 
 export interface AnyType {
@@ -103,11 +104,11 @@ export function makeVariable(id: Ident): Variable {
     return {kind: TypeKind.Variable, id};
 }
 
-export function makeName(id: symbol, covariant: boolean): GenaratedName  {
+export function makeName(id: GeneratedId, covariant: boolean): GenaratedName  {
     return {kind: TypeKind.Variable, id, covariant};
 }
 
-function substituteWithVariance(t: ContractType, i: Ident, n: symbol, covariant: boolean): ContractType {
+function substituteWithVariance(t: ContractType, i: Ident, n: GeneratedId, covariant: boolean): ContractType {
     switch (t.kind) {
         case TypeKind.Function:
             return makeFunctionType(
@@ -136,11 +137,41 @@ function substituteWithVariance(t: ContractType, i: Ident, n: symbol, covariant:
     }
 }
 
-function freshName(source: string): symbol {
-    return Symbol(source);
+let idGen = 0;
+function freshName(source: string): GeneratedId {
+    idGen++;
+    return `${source}_{idGen}`;
 }
 
-export function forallConversion(t: ForallType): ContractType  {
-    return substituteWithVariance(t.body, t.binder, freshName(t.binder), true);
+export function forallConversion(t: ForallType): [ContractType, GeneratedId]  {
+    const id = freshName(t.binder);
+    return [substituteWithVariance(t.body, t.binder, id, true), id];
 }
  
+export const enum ScopeDirection {
+    In,
+    Out
+}
+
+export interface ScopeSet {
+    [id: string]: ScopeDirection
+}
+
+export function makeScopeSet(): ScopeSet {
+    return {};
+}
+
+export function addToScope(scope: ScopeSet, id: GeneratedId): ScopeSet  {
+    const clone = Object.assign({}, scope);
+    clone[id] = ScopeDirection.In;
+    return clone;
+}
+
+export function invertScopeSet(scope: ScopeSet): ScopeSet {
+    const result: ScopeSet = {};
+    for(const id in scope) {
+        result[id] = scope[id] === ScopeDirection.In ? ScopeDirection.Out : ScopeDirection.In;
+    }
+    return result;
+}
+

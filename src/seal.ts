@@ -3,10 +3,11 @@ import {
     NonEmptyArray
 } from "./types";
 
+import * as T from "./contractTypes";
 import * as B from "./blame";
 
 interface SealData {
-    key: symbol;
+    key: string;
     owner: B.BlameNode
 }
 
@@ -19,7 +20,7 @@ function isSeal(x: Top): x is Seal  {
     return typeof x === "function" && sealedValues.has(x);
 }
 
-function addSealData(seal: Seal, key: symbol, owner: B.BlameNode): void {
+function addSealData(seal: Seal, key: string, owner: B.BlameNode): void {
     if (!sealData.has(seal)) {
         sealData.set(seal, [{key, owner}]);
         return;
@@ -28,15 +29,15 @@ function addSealData(seal: Seal, key: symbol, owner: B.BlameNode): void {
     return;
 }
 
-export function seal<T>(x: T, key: symbol, owner: B.BlameNode): T {
+export function seal<T>(x: T, key: string, owner: B.BlameNode): T {
     if (isSeal(x)) {
         addSealData(x, key, owner);
         return x;
     }
     const coffer: any = () => undefined;
-    const seal = new Proxy(coffer, makeSealHandler(wrap(x), B.negate(owner)));
+    const seal = new Proxy(coffer, makeSealHandler(wrap(x), owner));
     sealedValues.set(seal,x);
-    addSealData(seal, key, B.negate(owner));
+    addSealData(seal, key, owner);
     return seal;
 }
 
@@ -123,50 +124,68 @@ function handleBlame(resolvedToTop: boolean): void  {
     }
 }
 
-export function unseal(candidate: Top, key: symbol, owner: B.BlameNode): Top {
-    if (isSeal(candidate)) {
-        const sealInfo = sealData.get(candidate)!;
-        const lastSealInfo = sealInfo.pop()!;
-        if (key === lastSealInfo.key) {
-            if (sealInfo.length === 0) {
-                const unsealed = sealedValues.get(candidate);
-                sealedValues.delete(candidate);
-                sealData.delete(candidate);
-                return unsealed;
-            } else {
-                return candidate;
+export function traverseSeals(x: any, p: B.BlameNode, f: (x: any, info?: SealData) => any, scope: T.ScopeSet) {
+    if (isSeal(x)) {
+        const rawValue = sealedValues.get(x)!;
+        const info = sealData.get(x)!;
+        const newSealInfo = [];
+
+        while(info.length > 0) {
+            const sealInfo = info.pop()!;
+            if (B.areCommutable(sealInfo.owner, p)) {
+                newSealInfo.push(sealInfo);
+            }
+            else if (scope[sealInfo.key] !== undefined && scope[sealInfo.key] === T.ScopeDirection.In) {
+                // This is ok, we blame the owner of the operation,
+                // then add the seal back on and apply the function to
+                // the result.
+                return f(x, sealInfo);
+            }
+            else {
+                B.blame(sealInfo.owner, handleBlame);
             }
         }
+        if(info.length !== 0) {
+            throw new Error("Assertion failed, seal data should be empty")
+        }
+        const result = f(rawValue);
+        newSealInfo.reverse();
+        const newSealData = info.concat(newSealInfo);
+        if (newSealData.length === 0) {
+            sealedValues.delete(x);
+            sealData.delete(x);
+        }
+        else {
+            sealData.set(x,newSealData as NonEmptyArray<SealData>);
+        }
+        return result;
+    }
+    console.log("no seal found");
+    return f(x);
+}
+
+function applyUnseal(candidate: Top, key: string, owner: B.BlameNode, sealInfo?: SealData): Top {
+    if (isSeal(candidate) && sealInfo !== undefined) {
+        if (key === sealInfo.key) {
+            return candidate;
+        }
         B.blame(owner, handleBlame);
-        sealInfo.push(lastSealInfo);
+        addSealData(candidate, sealInfo.key, sealInfo.owner);
         return candidate;
     }
     B.blame(owner, handleBlame);
     return candidate;
 }
 
+export function unseal(candidate: Top, key: string, owner: B.BlameNode, scope: T.ScopeSet): any {
+    return traverseSeals(candidate, owner, (x: Top, info?: SealData) => applyUnseal(x, key, owner, info), scope);
+}
 
-export function applyNonParametricContract(x: any, p: B.BlameNode, f: (x: any) => any) {
-    if (isSeal(x)) {
-        const rawValue = sealedValues.get(x)!;
-        const info = sealData.get(x)!;
-        const newSealInfo = [];
-        for (let i = info.length - 1; i !== 0; i--) {
-            const sealInfo = info[i];
-            if(B.areCommutable(sealInfo.owner, p)) {
-                newSealInfo.push(sealInfo);
-            }
-            B.blame(sealInfo.owner, handleBlame);
-        }
-        if (newSealInfo.length === 0) {
-            sealedValues.delete(x);
-            sealData.delete(x);
-            return f(rawValue);
-        } else {
-            sealData.set(x, newSealInfo as NonEmptyArray<SealData>);
-//            sealedValues.set(x,f(rawValue));
-            return x;
-        }
-    }
-    return f(x);
+export function applyNonParametricContract(x: any, p: B.BlameNode, f: (x: any) => any, scope: T.ScopeSet) {
+    return traverseSeals(x, p, (x: any, sealInfo?:SealData) => {
+        if (sealInfo === undefined) { return f(x); }
+        B.blame(p, handleBlame);
+        addSealData(x, sealInfo.key, sealInfo.owner);
+        return f(x);
+    }, scope);
 }
