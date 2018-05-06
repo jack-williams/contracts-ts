@@ -65,19 +65,6 @@ function wrap(x: Top): Top {
      }
 }
 
-function Wrapper(this: any, n: any) {
-    this.value = n;
-}
-Wrapper.prototype.valueOf = function () {
-    return this.value;
-}
-Wrapper.prototype.toString = function() {
-    return this.value.toString();
-}
-Wrapper.prototype.inspect = function() {
-    return this.value.toString();
-}
-
 // TODO: I need to blame all of the nodes associated with the seal. I
 // need to basically create a pointer to the info on the seal and
 // iterate through backwards blaming them.
