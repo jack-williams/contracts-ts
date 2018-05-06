@@ -59,7 +59,7 @@ function wrap(x: Top): Top {
          case "boolean":
          case "symbol":
          case "undefined":
-             return new (Wrapper as any)(x);
+             return Object(x);
          default:
              return x;
      }
