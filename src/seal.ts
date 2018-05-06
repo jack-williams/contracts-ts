@@ -71,6 +71,12 @@ function Wrapper(this: any, n: any) {
 Wrapper.prototype.valueOf = function () {
     return this.value;
 }
+Wrapper.prototype.toString = function() {
+    return this.value.toString();
+}
+Wrapper.prototype.inspect = function() {
+    return this.value.toString();
+}
 
 // TODO: I need to blame all of the nodes associated with the seal. I
 // need to basically create a pointer to the info on the seal and
@@ -103,6 +109,12 @@ function makeSealHandler(value: any, p: B.BlameNode): ProxyHandler<any> {
         },
         get: function (target: any, name: any, receiver: any): any {
             B.blame(p, handleBlame);
+            if (name === "valueOf") {
+                return Reflect.get(value,name,receiver).bind(value);
+            }
+            if (name === "toString") {
+                return Reflect.get(value,name,receiver).bind(value);
+            }
             return Reflect.get(value,name,receiver);
         },
         set: function (target: any, name: string, val: any, receiver: any): boolean {
