@@ -29,15 +29,32 @@ function addSealData(seal: Seal, key: string, owner: B.BlameNode): void {
     return;
 }
 
+/*
+ * Is there a better way to do this, rather than having to create a
+ * mutable box? I'm not sure there is without remaking the seal
+ * handler (and therefore proxy) each time.
+ */
+function getSealOwnersFn(seal: [Seal]): () => B.BlameNode[] {
+    return () => {
+        const thisSealData = sealData.get(seal[0]);
+        if(thisSealData) {
+            return thisSealData.map(data => data.owner).reverse();
+        }
+        return [];
+    }
+}
+
 export function seal<T>(x: T, key: string, owner: B.BlameNode): T {
     if (isSeal(x)) {
         addSealData(x, key, owner);
         return x;
     }
     const coffer: any = () => undefined;
-    const seal = new Proxy(coffer, makeSealHandler(wrap(x), owner));
+    const sealBox: [Seal] = [undefined as any];
+    const seal = new Proxy(coffer, makeSealHandler(wrap(x), getSealOwnersFn(sealBox)));
     sealedValues.set(seal,x);
     addSealData(seal, key, owner);
+    sealBox[0] = seal;
     return seal;
 }
 
@@ -45,10 +62,11 @@ function reseal(oldSeal: Seal, newVal: any, newSealInfo: NonEmptyArray<SealData>
     sealedValues.delete(oldSeal);
     sealData.delete(oldSeal);
     const coffer: any = () => undefined;
-    // Todo: get rid of this undefined;
-    const seal = new Proxy(coffer, makeSealHandler(wrap(newVal), undefined as any));
+    const sealBox: [Seal] = [undefined as any];
+    const seal = new Proxy(coffer, makeSealHandler(wrap(newVal), getSealOwnersFn(sealBox)));
     sealedValues.set(seal,newVal);
     sealData.set(seal, newSealInfo);
+    sealBox[0] = seal;
     return seal;
 }
 
@@ -68,34 +86,34 @@ function wrap(x: Top): Top {
 // TODO: I need to blame all of the nodes associated with the seal. I
 // need to basically create a pointer to the info on the seal and
 // iterate through backwards blaming them.
-function makeSealHandler(value: any, p: B.BlameNode): ProxyHandler<any> {
+function makeSealHandler(value: any, getOwners: () => B.BlameNode[]): ProxyHandler<any> {
     return  {
         getPrototypeOf: function(target) {
-            B.blame(p, handleBlame);
+            getOwners().map(p => B.blame(p, handleBlame));
             return Reflect.getPrototypeOf(value);
         },
         setPrototypeOf: function(target, prototype) {
-            B.blame(p, handleBlame);
+            getOwners().map(p => B.blame(p, handleBlame));
             return Reflect.setPrototypeOf(value, prototype);
         },
         isExtensible: function(target) {
-            B.blame(p, handleBlame);
+            getOwners().map(p => B.blame(p, handleBlame));
             return Reflect.isExtensible(value);
         },
         preventExtensions: function(target) {
-            B.blame(p, handleBlame);
+            getOwners().map(p => B.blame(p, handleBlame));
             return Reflect.preventExtensions(value);
         },
         getOwnPropertyDescriptor: function(target, prop) {
-            B.blame(p, handleBlame);
+            getOwners().map(p => B.blame(p, handleBlame));
             return Reflect.getOwnPropertyDescriptor(value, prop);
         },
         has: function(target, prop) {
-            B.blame(p, handleBlame);
+            getOwners().map(p => B.blame(p, handleBlame));
             return Reflect.has(value, prop);
         },
         get: function (target: any, name: any, receiver: any): any {
-            B.blame(p, handleBlame);
+            getOwners().map(p => B.blame(p, handleBlame));
             if (name === "valueOf") {
                 return Reflect.get(value,name,receiver).bind(value);
             }
@@ -105,27 +123,27 @@ function makeSealHandler(value: any, p: B.BlameNode): ProxyHandler<any> {
             return Reflect.get(value,name,receiver);
         },
         set: function (target: any, name: string, val: any, receiver: any): boolean {
-            B.blame(p, handleBlame);
+            getOwners().map(p => B.blame(p, handleBlame));
             return Reflect.set(value, name, val);
         },
         deleteProperty: function(target, property) {
-            B.blame(p, handleBlame);
+            getOwners().map(p => B.blame(p, handleBlame));
             return Reflect.deleteProperty(value, property);
         },
         defineProperty: function(target, property, descriptor) {
-            B.blame(p, handleBlame);
+            getOwners().map(p => B.blame(p, handleBlame));
             return Reflect.defineProperty(value, property, descriptor);
         },
         ownKeys: function(target) {
-            B.blame(p, handleBlame);
+            getOwners().map(p => B.blame(p, handleBlame));
             return Reflect.ownKeys(value);
         },
         apply: function (target: any, thisValue: any, args: any[]): any {
-            B.blame(p, handleBlame);
+            getOwners().map(p => B.blame(p, handleBlame));
             return Reflect.apply(value, thisValue, args);
         },
         construct: function(target, argumentsList, newTarget) {
-            B.blame(p, handleBlame);
+            getOwners().map(p => B.blame(p, handleBlame));
             return Reflect.construct(value, argumentsList, newTarget);
         }
     };
