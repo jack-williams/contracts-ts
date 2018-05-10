@@ -5,7 +5,6 @@
     "main": "dist/index.js",
     "scripts": {
         "test": "node node_modules/mocha/bin/mocha dist/**/*.spec.js"
-
     },
     "repository": {
         "type": "git",
@@ -13,7 +12,7 @@
     },
     "keywords": [],
     "author": "",
-    "license": "ISC",
+    "license": "MIT",
     "bugs": {
         "url": "https://github.com/jack-williams/contracts-ts/issues"
     },

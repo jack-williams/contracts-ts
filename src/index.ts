@@ -9,27 +9,25 @@ const BOOLEAN = T.makeFlatType(T.FlatSpec.Boolean);
 
 const X = T.makeVariable("X");
 
-const NandNtoN: T.ContractType =
-    T.makeAndType(FUNCTION,T.makeFunctionType([NUMBER,NUMBER], NUMBER));
+const NtoN: T.ContractType =
+    T.makeAndType(FUNCTION,T.makeFunctionType([NUMBER], NUMBER));
 const BandBtoB: T.ContractType =
     T.makeAndType(FUNCTION,T.makeFunctionType([BOOLEAN,BOOLEAN], BOOLEAN));
+const ID: T.ContractType =
+    T.makeAndType(FUNCTION,T.makeForallType("X", T.makeFunctionType([X], X)));
 
 const p = B.makeRootNode(B.label("identUnionTest"));
-const q = B.makeRootNode(B.label("numeber"));
+const q = B.makeRootNode(B.label("number"));
 const q2 = B.makeRootNode(B.label("id2"));
 
 function checkNum<X>(x: X): X  {
     return contract(x, q, NUMBER);
 }
 
+let w = (x: any) => (x + checkNum(x + 1));
 
-const ident = T.makeForallType("X", T.makeFunctionType([NUMBER, X], T.ANY));
+w = contract(w, p, T.makeUnionType(NtoN,ID));
 
-let f = (x: any, y: any) => y;
-
-f = contract(f, p, ident);
-
-let res = f(3, 32);
-let res2 = f(42, 3);
-f(3, 3);
-
+console.log(w(4));
+//console.log(5);
+// w(true);
