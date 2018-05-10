@@ -1,5 +1,5 @@
 {
-    "name": "contracts.ts",
+    "name": "contracts-ts",
     "version": "0.0.1",
     "description": "Contracts for Higher-order Types",
     "main": "dist/index.js",
