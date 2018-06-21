@@ -220,38 +220,3 @@ function foldNode<A>(node: BlameNode, f: (a: A, node: BranchNode) => A, init: A)
     return isBranch(node) ? f(foldNode(node.parent, f, init), node) : init;
 }
 
-function length(node: BlameNode): number {
-    return foldNode(node, (n,_) => 1 + n, 1);
-}
-
-function shorten(n: number, node: BlameNode): BlameNode {
-    if (n <= 0) { return node; }
-    if (isBranch(node)) { return shorten(n - 1, node.parent); }
-    return node;
-}
-
-function hasCommonBranchPoint(n1: BlameNode, n2: BlameNode): boolean {
-    if (isBranch(n1) && isBranch(n2)) {
-        if (n1.info.flip === n2.info || n1.info.flip === n2.info.negate) {
-            return true;
-        }
-        return hasCommonBranchPoint(n1.parent, n2.parent);
-    }
-    return false;
-}
-
-function obliviousNodes(n1: BlameNode, n2: BlameNode): boolean {
-    const l1 = length(n1);
-    const l2 = length(n2);
-    if (l2 > l1) {
-        return hasCommonBranchPoint(n1, shorten(l2 - l1, n2));
-    }
-    if (l1 > l2) {
-        return hasCommonBranchPoint(shorten(l1 - l2, n1),n2);
-    }
-    return hasCommonBranchPoint(n1,n2);
-}
-
-export function areCommutable(left: BlameNode, right: BlameNode): boolean {
-    return obliviousNodes(left, right);
-}

@@ -5,7 +5,6 @@ export {
     makeRootNode,
     makeBranchNodes,
     makeAppNodes,
-    areCommutable,
     negate
 } from "./tracking";
 
