@@ -25,8 +25,6 @@ type Charge = Positive | Negative;
 export const positive: Positive = true as Positive;
 export const negative: Negative = false as Negative;
 
-type Negate<C extends Charge> = C extends Positive ? Negative : Positive;
-
 interface BlameNodeInfo {
     kind: NodeKind;
     charge: Charge;
