@@ -1,3 +1,7 @@
+// Notes: I'm not sure that I have to track the direction of
+// seals. Two questions are whether 1: tracking the direction is
+// /wrong/. The other question is if it's not wrong, is it admissable.
+
 import {
     Top,
     NonEmptyArray
