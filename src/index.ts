@@ -1,14 +1,11 @@
 import * as T from "./contractTypes";
 import * as B from "./blame";
-import * as S from "./seal";
 import { contract } from "./contracts";
 
 const NUMBER = T.makeFlatType(T.FlatSpec.Number);
 const FUNCTION = T.makeFlatType(T.FlatSpec.Function);
 const BOOLEAN = T.makeFlatType(T.FlatSpec.Boolean);
 const STRING = T.makeFlatType(T.FlatSpec.String);
-
-const X = T.makeVariable("X");
 
 const NtoN: T.ContractType =
     T.makeAndType(FUNCTION,T.makeFunctionType([NUMBER], NUMBER));
