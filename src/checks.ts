@@ -20,7 +20,7 @@ function isObject(value: Top): value is object {
       return value !== null && typeof value === 'object';
 }
 
-function isFunction(value: Top): value is Function {
+function isFunction(value: Top): value is (...args: any[]) => any {
     return value !== null && typeof value === 'function';
 }
 
