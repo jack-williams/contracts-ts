@@ -30,7 +30,7 @@ interface SpecMap {
     [T.FlatSpec.Boolean]: (x: Top) => x is boolean;
     [T.FlatSpec.String]: (x: Top) => x is string;
     [T.FlatSpec.Object]: (x: Top) => x is object;
-    [T.FlatSpec.Function]: (x: Top) => x is Function;
+    [T.FlatSpec.Function]: (x: Top) => x is (...args: any[]) => any;
 }
 
 export const specMap: SpecMap = {
