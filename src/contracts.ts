@@ -40,10 +40,19 @@ function checkFlat<X>(v: X, p: B.BlameNode, type: T.FlatType): X {
     return v;
 }
 
+const isFunction = C.specMap[T.FlatSpec.Function];
+const isObject = C.specMap[T.FlatSpec.Function];
+
 function checkFunction<X>(v: X, p: B.BlameNode, type: T.FunctionType): X {
-    if (typeof v === "object" || typeof v === "function") {
+    if (isFunction(v) || isObject(v)) {
         const makeContext = () => B.makeAppNodes(p, type.argumentTypes.length);
         const argHandler = <X>(ctx: B.ApplicationNodes, args: X[]) => {
+            /*
+              Do not wrap the arguments if the arity check
+              failed. Technically we do not need to wrap the return
+              type as it cannot be blamed, but the machinery to do
+              this conditional wrapping can make things messy.
+            */
             if (args.length > type.argumentTypes.length) {
                 B.blame(ctx.dom[type.argumentTypes.length], handleBlame(ctx.dom[type.argumentTypes.length]));
                 return args;
@@ -55,11 +64,17 @@ function checkFunction<X>(v: X, p: B.BlameNode, type: T.FunctionType): X {
             return args.map((v,n) => check(v, ctx.dom[n], type.argumentTypes[n]));
         }
         const returnHandler = <X>(ctx: B.ApplicationNodes, v: X) => check(v, ctx.cod, type.returnType);
-        return M.createFunctionMonitor(v as any, makeContext, argHandler, returnHandler);
+        return M.createFunctionMonitor(v, makeContext, argHandler, returnHandler);
     }
     return v;
 }
 
+/**
+ * Check a branching type (Intersection, Union, And) by checking both
+ * branches.
+ *
+ * Left is checked before right, but this should not matter.
+ */
 function checkBranching<B extends T.BranchKind, X>(v: X, p: B.BlameNode, type: T.BranchType<B>): X {
     const [l, r] = B.makeBranchNodes(type.kind, p);
     return check(check(v, l, type.left), r, type.right);
