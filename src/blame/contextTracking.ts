@@ -145,7 +145,7 @@ export function someCompatiblePath(n: number, path: RouteInfo[], blameState: Rou
         }
         return someCompatiblePath(n+1, path, thisRouteMap);
     } else {
-        const argCompatible = totalPointer[RouteKind.Domain].some((state, i) => !!getRouteValue(route, state));
+        const argCompatible = totalPointer[RouteKind.Domain].some((state) => !!getRouteValue(route, state));
         if (argCompatible) { return true };
         const thisRouteMap = totalPointer[route.kind][route.id];
         if (thisRouteMap === undefined) {
