@@ -157,19 +157,20 @@ const evenThenTrue = Type.and(Base.function, Type.fun([Base.even], Base.true));
 const oddThenFalse = Type.and(Base.function, Type.fun([Base.odd], Base.false));
 const stringThenNtoN = Type.and(Base.function, Type.fun([Base.string], numToNum));
 
-const mega = Type.intersection(
-    trueThenNumber,
-    Type.intersection(
-        falseThenString,
-        Type.intersection(
-            evenThenTrue,
-            Type.intersection(
-                oddThenFalse,
-                stringThenNtoN
-           )
-        )
-    )
-);
+const mega =
+      Type.intersection(
+          trueThenNumber,               // true -> Number
+          Type.intersection(            
+              falseThenString,          // false -> String
+              Type.intersection(        
+                  evenThenTrue,         // Even -> true
+                  Type.intersection(    
+                      oddThenFalse,     // Odd -> false
+                      stringThenNtoN    // String -> Number -> Number
+                  )
+              )
+          )
+      );
 
 console.log(mega);
 
