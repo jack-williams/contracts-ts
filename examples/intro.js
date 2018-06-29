@@ -4,7 +4,7 @@
 
 const contract = require('../dist/');
 const Base = contract.Base;
-const Type = contract.Type; 
+const Type = contract.Type;
 
 function f(x) {
     if(typeof x === 'boolean') {
