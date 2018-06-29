@@ -82,7 +82,7 @@ export type BlameNode = RootNode | BranchNode;
 
 //// Constructor Functions 
 
-let gensym: 0;
+let gensym: number = 0;
 export function label(id?: string): Label {
     if(id === undefined) {
         return Symbol(gensym++) as Label;

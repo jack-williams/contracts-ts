@@ -17,8 +17,8 @@ export function assert<X>(v: X, labelOrType: string | T.ContractType, type?: T.C
     if (typeof labelOrType === "string" && type !== undefined) {
         return check(v, B.makeRootNode(B.label(labelOrType)), type);
     }
-    if (type !== undefined) {
-        return check(v, B.makeRootNode(B.label()), type);
+    if (typeof labelOrType === "object") {
+        return check(v, B.makeRootNode(B.label()), labelOrType);
     }
     return Debug.fail("Illegal parameters to contract");
 
