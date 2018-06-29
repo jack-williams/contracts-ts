@@ -12,14 +12,17 @@ const enum NodeKind {
     Branch
 }
 
-export type Label = symbol & {__label: any};
+export type Label = symbol & { __label: any };
 
 type BlamePath = Context.RouteInfo[];
 type BlameState = Context.RouteMap<boolean>;
 type ContextTracker = Context.RouteMap<number>;
 
-type Positive = true & {__charge: any};
-type Negative = false & {__charge: any};
+/*
+ * Pseudo-nominal boolean types.
+ */
+type Positive = true & { __charge: any };
+type Negative = false & { __charge: any };
 type Charge = Positive | Negative;
 
 export const positive: Positive = true as Positive;
@@ -43,7 +46,7 @@ interface UnlinkedBlameNodeInfo {
 
 interface UnlinkedRootNodeInfo extends UnlinkedBlameNodeInfo {
     kind: NodeKind.Root;
-    label: Label;    
+    label: Label;
 }
 
 interface RootNodeInfo extends BlameNodeInfo {
@@ -82,7 +85,7 @@ export type BlameNode = RootNode | BranchNode;
 //// Constructor Functions 
 
 export function label(id: string): Label {
-    return Symbol(id) as Label; 
+    return Symbol(id) as Label;
 }
 
 function initRootNodeInfo(label: Label, charge: Charge): UnlinkedRootNodeInfo {
@@ -97,8 +100,8 @@ function initRootNodeInfo(label: Label, charge: Charge): UnlinkedRootNodeInfo {
 }
 
 function makeRootNodeInfo(label: Label): RootNodeInfo {
-    const pos = initRootNodeInfo(label,positive);
-    const neg = initRootNodeInfo(label,negative);
+    const pos = initRootNodeInfo(label, positive);
+    const neg = initRootNodeInfo(label, negative);
     pos.negate = neg;
     neg.negate = pos;
     // Linking complete
@@ -136,7 +139,7 @@ function makeBranchNodeInfo(type: BranchKind): [BranchNodeInfo, BranchNodeInfo] 
 }
 
 function makeRootNodeFull(info: RootNodeInfo, path: BlamePath): BlameNode {
-    return {info, path};
+    return { info, path };
 }
 
 export function makeRootNode(label: Label): BlameNode {
@@ -148,7 +151,7 @@ function makeBranchNode(parent: BlameNode, info: BranchNodeInfo, path: BlamePath
 }
 
 export function makeBranchNodes(type: BranchKind, parent: BlameNode): [BlameNode, BlameNode] {
-    const [left,right] = makeBranchNodeInfo(type);
+    const [left, right] = makeBranchNodeInfo(type);
     return [makeBranchNode(parent, left, []), makeBranchNode(parent, right, [])];
 }
 
@@ -197,7 +200,7 @@ function incNumOrUndefined(n: number | undefined): number {
     return n === undefined ? 1 : n + 1;
 }
 
-function delta(node: BlameNode): number  {
+function delta(node: BlameNode): number {
     const i = Context.modifyLeaf(node.info.contextTracker, incNumOrUndefined, node.path);
     return i === undefined ? 0 : i;
 }
@@ -216,7 +219,7 @@ export function parent(branchNode: BranchNode): BlameNode {
     return branchNode.parent;
 }
 
-function foldNode<A>(node: BlameNode, f: (a: A, node: BranchNode) => A, init: A): A  {
+function foldNode<A>(node: BlameNode, f: (a: A, node: BranchNode) => A, init: A): A {
     return isBranch(node) ? f(foldNode(node.parent, f, init), node) : init;
 }
 
