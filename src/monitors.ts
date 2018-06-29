@@ -9,11 +9,11 @@ function makeFunctionHandler<T extends object, CTX>(
 ): ProxyHandler<T> {
     return {
         apply(target: T, thisArg: any, args: any[]) {
-            const stack = new Error().stack;
-            if (stack) {
-                console.log(args);
-                console.log("LINE: " + stack.split('\n')[2]);
-            }
+//             const stack = new Error().stack;
+//             if (stack) {
+//                 console.log(args);
+//                 console.log("LINE: " + stack.split('\n')[2]);
+//             }
             const context = makeContext();
             const checkedArgs = argHandler(context, args);
             const result = Reflect.apply(v as Function, thisArg, checkedArgs);
