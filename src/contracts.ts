@@ -11,9 +11,9 @@ import * as B from './blame';
  * @param label
  * @param type
  */
-export function contract<X>(v: X, type: T.ContractType): X;
-export function contract<X>(v: X, label: string, type: T.ContractType): X;
-export function contract<X>(v: X, labelOrType: string | T.ContractType, type?: T.ContractType): X {
+export function assert<X>(v: X, type: T.ContractType): X;
+export function assert<X>(v: X, label: string, type: T.ContractType): X;
+export function assert<X>(v: X, labelOrType: string | T.ContractType, type?: T.ContractType): X {
     if (typeof labelOrType === "string" && type !== undefined) {
         return check(v, B.makeRootNode(B.label(labelOrType)), type);
     }
