@@ -7,12 +7,9 @@ const FUNCTION = T.makeFlatType(T.FlatSpec.Function);
 const BOOLEAN = T.makeFlatType(T.FlatSpec.Boolean);
 const STRING = T.makeFlatType(T.FlatSpec.String);
 
-const NtoN: T.ContractType =
-    T.makeAndType(FUNCTION,T.makeFunctionType([NUMBER], NUMBER));
-const BtoBunionS: T.ContractType =    
-    T.makeAndType(FUNCTION,T.makeFunctionType([BOOLEAN], T.makeUnionType(BOOLEAN, STRING)));
-const Example: T.ContractType =
-    T.makeIntersectionType(NtoN, BtoBunionS);
+const NtoN: T.ContractType = T.and(T.fun([NUMBER], NUMBER), FUNCTION);
+const BtoBunionS: T.ContractType = T.and(FUNCTION, T.fun([BOOLEAN], T.union(BOOLEAN, STRING)));
+const Example: T.ContractType = T.intersection(NtoN, BtoBunionS);
 
 const p = B.makeRootNode(B.label("example"));
 

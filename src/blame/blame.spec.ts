@@ -30,21 +30,21 @@ describe("Blame Negation", () => {
 
         expect(p.info).to.
             equal(doubleNegateP.info,
-                  "Root node info should be the same pointer after double negation.");
+                "Root node info should be the same pointer after double negation.");
 
         expect(tracking.isPositive(doubleNegatePL)).to.
             equal(true, "Positive branch node (L) should be positive after double negation");
 
         expect(pL.info).to.
             equal(doubleNegatePL.info,
-                  "branch node (L) info should be the same pointer after double negation.");
+                "branch node (L) info should be the same pointer after double negation.");
 
         expect(tracking.isPositive(doubleNegatePR)).to.
             equal(true, "Positive branch node (R) should be positive after double negation");
 
         expect(pR.info).to.
             equal(doubleNegatePR.info,
-                  "Branch node (R) info should be the same pointer after double negation.");
+                "Branch node (R) info should be the same pointer after double negation.");
     });
 });
 

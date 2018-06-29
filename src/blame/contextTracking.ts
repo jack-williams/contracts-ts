@@ -34,7 +34,7 @@ interface TotalRouteMap<A> {
 
 export type RouteMap<A> = EmptyRouteMap<A> | TotalRouteMap<A>;
 
-function isTotalRouteMap<A>(routeMap: RouteMap<A>): routeMap is TotalRouteMap<A>  {
+function isTotalRouteMap<A>(routeMap: RouteMap<A>): routeMap is TotalRouteMap<A> {
     return routeMap[RouteKind.Domain] !== undefined;
 }
 
@@ -60,11 +60,11 @@ function populateEmptyRouteMap<A>(routeMap: EmptyRouteMap<A>): TotalRouteMap<A> 
 
 //// Constructor Functions
 
-export function makeDomainRoute(arg: number, id: number): DomainRoute  {
+export function makeDomainRoute(arg: number, id: number): DomainRoute {
     return { kind: RouteKind.Domain, id, arg }
 }
 
-export function makeCodomainRoute(id: number): CodomainRoute  {
+export function makeCodomainRoute(id: number): CodomainRoute {
     return { kind: RouteKind.Codomain, id };
 }
 
@@ -97,7 +97,7 @@ function nextPointer<A>(context: RouteMap<A>, route: RouteInfo): RouteMap<A> {
     return lookupRoute(context, route);
 }
 
-export function modifyLeaf<A>(context: RouteMap<A>, update: (a: A | undefined) => A, path: RouteInfo[]): A | undefined  {
+export function modifyLeaf<A>(context: RouteMap<A>, update: (a: A | undefined) => A, path: RouteInfo[]): A | undefined {
     let currentPointer: RouteMap<A> = context;
     for (let i = 0; i < path.length; i++) {
         currentPointer = nextPointer(currentPointer, path[i]);
@@ -107,7 +107,7 @@ export function modifyLeaf<A>(context: RouteMap<A>, update: (a: A | undefined) =
     return result;
 }
 
-export function modifyPath<A>(context: RouteMap<A>, update: (a: A | undefined) => A, path: RouteInfo[]): A | undefined  {
+export function modifyPath<A>(context: RouteMap<A>, update: (a: A | undefined) => A, path: RouteInfo[]): A | undefined {
     let currentPointer: RouteMap<A> = context;
     for (let i = 0; i < path.length; i++) {
         currentPointer.value = update(currentPointer.value);
@@ -133,7 +133,7 @@ export function someCompatiblePath(n: number, path: RouteInfo[], blameState: Rou
     }
     let totalPointer: TotalRouteMap<boolean> = blameState as TotalRouteMap<boolean>;
     if (route.kind === RouteKind.Domain) {
-        const codomainCompatible = getRouteValue(route,totalPointer[RouteKind.Codomain]);
+        const codomainCompatible = getRouteValue(route, totalPointer[RouteKind.Codomain]);
         if (codomainCompatible) { return true };
         const argCompatible = totalPointer[route.kind].some((state, i) => i !== route.arg && !!getRouteValue(route, state));
         if (argCompatible) { return true };
@@ -143,7 +143,7 @@ export function someCompatiblePath(n: number, path: RouteInfo[], blameState: Rou
         if (thisRouteMap === undefined) {
             return false
         }
-        return someCompatiblePath(n+1, path, thisRouteMap);
+        return someCompatiblePath(n + 1, path, thisRouteMap);
     } else {
         const argCompatible = totalPointer[RouteKind.Domain].some((state) => !!getRouteValue(route, state));
         if (argCompatible) { return true };
@@ -152,7 +152,7 @@ export function someCompatiblePath(n: number, path: RouteInfo[], blameState: Rou
             console.log(JSON.stringify(blameState));
             return false
         }
-        return someCompatiblePath(n+1, path, thisRouteMap);
+        return someCompatiblePath(n + 1, path, thisRouteMap);
     }
 }
 
@@ -161,7 +161,7 @@ export function matchingElimination(route: RouteInfo, blameState: RouteMap<boole
         if (getRouteValue(route, blameState[RouteKind.Codomain])) {
             return true;
         }
-        return blameState[RouteKind.Domain].some(state => !!getRouteValue(route, state));        
+        return blameState[RouteKind.Domain].some(state => !!getRouteValue(route, state));
     }
     return false;
 }
