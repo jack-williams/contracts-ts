@@ -5,9 +5,11 @@
 
 */
 
+import { Top } from './common';
+
 /** Descriminators for types */
 export const enum TypeKind {
-    Flat,
+    Base,
     Function,
     Intersection,
     Union,
@@ -15,22 +17,15 @@ export const enum TypeKind {
     Any,
 }
 
-export const enum FlatSpec {
-    Number,
-    Boolean,
-    String,
-    Function,
-    Object
-}
-
 /**
  * Subset of type kinds that describe branching types.
  */
 export type BranchKind = TypeKind.Intersection | TypeKind.Union | TypeKind.And;
 
-export interface FlatType {
-    kind: TypeKind.Flat;
-    spec: FlatSpec;
+export interface BaseType {
+    kind: TypeKind.Base;
+    description: string;
+    spec: (val: Top) => boolean;
 }
 
 export interface FunctionType {
@@ -54,15 +49,21 @@ export type UnionType = BranchType<TypeKind.Union>;
 export type AndType = BranchType<TypeKind.And>;
 
 export type ContractType =
-    FlatType | AnyType |                     // Base
+    BaseType | AnyType |                     // Base
     FunctionType |                           // Function
     IntersectionType | UnionType | AndType;  // Branching
 
 
+/**
+ * The `any` type can be implement using a base type with a spec that
+ * always returns true. For parity with the paper, and for performance
+ * reasons, it is nice to have it built-in so that it truely is the
+ * identity function.
+ */
 export const any: AnyType = { kind: TypeKind.Any };
 
-export function makeFlatType(spec: FlatSpec): FlatType {
-    return { kind: TypeKind.Flat, spec };
+export function makeBaseType(description: string, spec: (val: Top) => boolean): BaseType {
+    return { kind: TypeKind.Base, description, spec };
 }
 
 export function fun(argumentTypes: ContractType[], returnType: ContractType): FunctionType {

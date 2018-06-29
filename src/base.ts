@@ -48,24 +48,21 @@ function isFunction(value: Top): value is (...args: any[]) => any {
     return value !== null && typeof value === "function";
 }
 
-/**
- * Map type from flat specification types to their implementation types.
- */
-interface SpecMap {
-    [T.FlatSpec.Number]: (x: Top) => x is number;
-    [T.FlatSpec.Boolean]: (x: Top) => x is boolean;
-    [T.FlatSpec.String]: (x: Top) => x is string;
-    [T.FlatSpec.Object]: (x: Top) => x is object;
-    [T.FlatSpec.Function]: (x: Top) => x is (...args: any[]) => any;
-}
 
 /**
- * Mapping from flat specification types to their implementations.
+ * A selection of base types.
  */
-export const specMap: SpecMap = {
-    [T.FlatSpec.Number]: isNumber,
-    [T.FlatSpec.Boolean]: isBoolean,
-    [T.FlatSpec.String]: isString,
-    [T.FlatSpec.Object]: isObject,
-    [T.FlatSpec.Function]: isFunction
+export const Base = {
+    number: T.makeBaseType("number", isNumber),
+    boolean: T.makeBaseType("boolean", isBoolean),
+    string: T.makeBaseType("string", isString),
+    object: T.makeBaseType("object", isObject),
+    function: T.makeBaseType("function", isFunction),
+    even: T.makeBaseType("even", val => isNumber(val) && val % 2 === 0),
+    positive: T.makeBaseType("positive", val => isNumber(val) && val > 0),
+    negative: T.makeBaseType("negative", val => isNumber(val) && val < 0),
+    true: T.makeBaseType("true", val => isBoolean(val) && val),
+    false: T.makeBaseType("false", val => isBoolean(val) && !val),
+    any: T.makeBaseType("never", _ => true), // another way to implement any
+    never: T.makeBaseType("never", _ => false),
 }

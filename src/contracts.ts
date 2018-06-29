@@ -1,7 +1,6 @@
-import { Debug } from './common';
+import { Debug, isFunction, isObject } from './common';
 
 import * as T from "./contractTypes";
-import * as C from './checks';
 import * as M from './monitors';
 import * as B from './blame';
 
@@ -27,7 +26,7 @@ export function contract<X>(v: X, labelOrType: string | T.ContractType, type?: T
 
 function check<X>(v: X, p: B.BlameNode, type: T.ContractType): X {
     switch (type.kind) {
-        case T.TypeKind.Flat:
+        case T.TypeKind.Base:
             return checkFlat(v, p, type);
 
         case T.TypeKind.Function:
@@ -53,17 +52,13 @@ function handleBlame(p: B.RootNode): void {
 
 }
 
-function checkFlat<X>(v: X, p: B.BlameNode, type: T.FlatType): X {
-    const spec = C.specMap[type.spec];
-    if (spec(v)) {
+function checkFlat<X>(v: X, p: B.BlameNode, type: T.BaseType): X {
+    if (type.spec(v)) {
         return v;
     }
     B.blame(p, handleBlame);
     return v;
 }
-
-const isFunction = C.specMap[T.FlatSpec.Function];
-const isObject = C.specMap[T.FlatSpec.Function];
 
 function checkFunction<X>(v: X, p: B.BlameNode, type: T.FunctionType): X {
     if (isFunction(v) || isObject(v)) {

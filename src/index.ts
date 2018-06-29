@@ -1,26 +1,19 @@
 import * as T from "./contractTypes";
 import * as B from "./blame";
+import { Base } from "./base";
 import { contract } from "./contracts";
 
-const NUMBER = T.makeFlatType(T.FlatSpec.Number);
-const FUNCTION = T.makeFlatType(T.FlatSpec.Function);
-const BOOLEAN = T.makeFlatType(T.FlatSpec.Boolean);
-const STRING = T.makeFlatType(T.FlatSpec.String);
+const EtoE: T.ContractType = T.and(T.fun([T.any, Base.string], Base.string), Base.function);
+const PtoP: T.ContractType = T.and(T.fun([Base.string, T.any], Base.string), Base.function);
+const Example: T.ContractType = T.intersection(EtoE, PtoP);
 
-const NtoN: T.ContractType = T.and(T.fun([NUMBER], NUMBER), FUNCTION);
-const BtoB: T.ContractType = T.and(T.fun([BOOLEAN], BOOLEAN), FUNCTION);
-const BtoBunionS: T.ContractType = T.and(FUNCTION, T.fun([BOOLEAN], T.union(STRING, BtoB)));
-const Example: T.ContractType = T.intersection(NtoN, BtoBunionS);
-
-function f(x: any): any {
-    if(typeof x === "boolean") {
-        return x ? "hello world" : (_: any) => true;
-    }
-    return x*10;
+function f(x: any, y: any): any {
+    return x + y;
 }
 
 let w = contract(f, "example", Example);
 
 // w("uthe");
-w(false)(true);
+w("44", 3);
+w(3, 3);
 // w(false);
