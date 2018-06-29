@@ -1,7 +1,6 @@
 /*
 
-  Implementations of first-order (flat) contracts. Each implementation
-  maps to a flat spec in contractTypes.ts
+  Implementations of first-order (flat) contracts.
 
 */
 
@@ -34,7 +33,7 @@ function isString(value: Top): value is string {
 }
 
 /**
- * Object predicte. The predicate only accepts pure objects, excluding
+ * Object predicte. The predicate only accepts pure objects, rejecting
  * values that are callable.
  */
 function isObject(value: Top): value is object {
@@ -59,6 +58,7 @@ export const Base = {
     object: T.makeBaseType("object", isObject),
     function: T.makeBaseType("function", isFunction),
     even: T.makeBaseType("even", val => isNumber(val) && val % 2 === 0),
+    odd: T.makeBaseType("odd", val => isNumber(val) && val % 2 !== 0),
     positive: T.makeBaseType("positive", val => isNumber(val) && val > 0),
     negative: T.makeBaseType("negative", val => isNumber(val) && val < 0),
     true: T.makeBaseType("true", val => isBoolean(val) && val),
