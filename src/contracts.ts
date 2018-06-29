@@ -1,42 +1,64 @@
+import { Debug } from './common';
+
 import * as T from "./contractTypes";
 import * as C from './checks';
 import * as M from './monitors';
 import * as B from './blame';
 
-export function contract<X>(v: X, p: B.BlameNode, type: T.ContractType): X {
-    return check(v, p, type);
+/**
+ * Apply a contract to value.
+ *
+ * @param v
+ * @param label
+ * @param type
+ */
+export function contract<X>(v: X, type: T.ContractType): X;
+export function contract<X>(v: X, label: string, type: T.ContractType): X;
+export function contract<X>(v: X, labelOrType: string | T.ContractType, type?: T.ContractType): X {
+    if (typeof labelOrType === "string" && type !== undefined) {
+        return check(v, B.makeRootNode(B.label(labelOrType)), type);
+    }
+    if (type !== undefined) {
+        return check(v, B.makeRootNode(B.label()), type);
+    }
+    return Debug.fail("Illegal parameters to contract");
+
 }
 
 function check<X>(v: X, p: B.BlameNode, type: T.ContractType): X {
     switch (type.kind) {
         case T.TypeKind.Flat:
-            return checkFlat(v, p, type)
+            return checkFlat(v, p, type);
+
         case T.TypeKind.Function:
             return checkFunction(v, p, type);
+
         case T.TypeKind.Intersection:
         case T.TypeKind.Union:
         case T.TypeKind.And:
             return checkBranching(v, p, type);
+
         case T.TypeKind.Any:
             return v;
     }
 }
 
-function handleBlame(p: B.BlameNode): (resolvedToTop: boolean) => void  {
-    return (resolvedToTop: boolean) => {
-        if (resolvedToTop) {
-//            console.log(B.nodeToString(p));
-            throw new Error("blame");
-        }
+function handleBlame(p: B.RootNode): void {
+    const stack = new Error().stack;
+    if (stack) {
+        console.log(stack.split('\n')[2]);
     }
+    console.log(p);
+    throw new Error("blame " + (p.info.charge ? "pos" : "neg"));
+
 }
 
 function checkFlat<X>(v: X, p: B.BlameNode, type: T.FlatType): X {
     const spec = C.specMap[type.spec];
-    if(spec(v)) {
+    if (spec(v)) {
         return v;
     }
-    B.blame(p, handleBlame(p));
+    B.blame(p, handleBlame);
     return v;
 }
 
@@ -54,14 +76,14 @@ function checkFunction<X>(v: X, p: B.BlameNode, type: T.FunctionType): X {
               this conditional wrapping can make things messy.
             */
             if (args.length > type.argumentTypes.length) {
-                B.blame(ctx.dom[type.argumentTypes.length], handleBlame(ctx.dom[type.argumentTypes.length]));
+                B.blame(ctx.dom[type.argumentTypes.length], handleBlame);
                 return args;
             }
             if (args.length < type.argumentTypes.length) {
-                B.blame(ctx.dom[args.length], handleBlame(ctx.dom[args.length]));
+                B.blame(ctx.dom[args.length], handleBlame);
                 return args;
             }
-            return args.map((v,n) => check(v, ctx.dom[n], type.argumentTypes[n]));
+            return args.map((v, n) => check(v, ctx.dom[n], type.argumentTypes[n]));
         }
         const returnHandler = <X>(ctx: B.ApplicationNodes, v: X) => check(v, ctx.cod, type.returnType);
         return M.createFunctionMonitor(v, makeContext, argHandler, returnHandler);

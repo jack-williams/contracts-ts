@@ -5,6 +5,7 @@
 
 */
 
+/** Descriminators for types */
 export const enum TypeKind {
     Flat,
     Function,
@@ -22,6 +23,9 @@ export const enum FlatSpec {
     Object
 }
 
+/**
+ * Subset of type kinds that describe branching types.
+ */
 export type BranchKind = TypeKind.Intersection | TypeKind.Union | TypeKind.And;
 
 export interface FlatType {
@@ -65,7 +69,11 @@ export function fun(argumentTypes: ContractType[], returnType: ContractType): Fu
     return { kind: TypeKind.Function, argumentTypes, returnType };
 }
 
-function makeBranchType<B extends BranchKind>(branch: B, left: ContractType, right: ContractType): BranchType<B> {
+function makeBranchType<B extends BranchKind>(
+    branch: B,
+    left: ContractType,
+    right: ContractType
+): BranchType<B> {
     return { kind: branch, left, right };
 }
 

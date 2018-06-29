@@ -4,14 +4,18 @@
 
 */
 
+import { Debug } from "../common";
+
 import { TypeKind } from "../contractTypes";
 
 import {
     BlameNode,
+    RootNode,
     BranchNode,
     isRoot,
     isPositive,
-    parent
+    parent,
+    root
 } from "./tracking";
 
 import {
@@ -64,7 +68,7 @@ function resolveNegativeBranch(node: BranchNode): boolean {
             // This is an assertion error because for a node to be
             // negated it must have been applied, extending the path.
             if (node.path.length === 0) {
-                throw new Error("assertion error: should not have negative blame on empty path");
+                return Debug.fail("Should never have negative blame on empty path");
             }
             return matchingElimination(node.path[0], node.info.flip.blameState)
                 ? assign(parent(node)) : false;
@@ -124,6 +128,10 @@ function assign(node: BlameNode): boolean {
     return resolve(blamePath(node));
 }
 
-export function blame<R>(node: BlameNode, withResolution: (reachedRoot: boolean) => R): R {
-    return withResolution(assign(node));
+export function blame<R>(node: BlameNode, withResolution: (p: RootNode) => void)
+    : void {
+    const assignment = assign(node);
+    if (assignment) {
+        withResolution(root(node));
+    }
 }

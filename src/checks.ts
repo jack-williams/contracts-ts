@@ -7,7 +7,7 @@
 
 import {
     Top,
-} from "./types";
+} from "./common";
 
 import * as T from "./ContractTypes";
 
@@ -15,21 +15,21 @@ import * as T from "./ContractTypes";
  * Number predicate on values. Does not count NaN, +Infinity, and
  * -Infinity as numbers.
  */
-function isNumber(value: Top): value is number  {
+function isNumber(value: Top): value is number {
     return typeof value === "number" && isFinite(value);
 }
 
 /**
  * Boolean predicate.
  */
-function isBoolean(value: Top): value is boolean  {
+function isBoolean(value: Top): value is boolean {
     return typeof value === "boolean";
 }
 
 /**
  * String predicate.
  */
-function isString(value: Top): value is string  {
+function isString(value: Top): value is string {
     return typeof value === "string";
 }
 
@@ -38,7 +38,7 @@ function isString(value: Top): value is string  {
  * values that are callable.
  */
 function isObject(value: Top): value is object {
-      return value !== null && typeof value === "object";
+    return value !== null && typeof value === "object";
 }
 
 /**

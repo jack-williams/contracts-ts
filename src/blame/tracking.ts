@@ -82,7 +82,11 @@ export type BlameNode = RootNode | BranchNode;
 
 //// Constructor Functions 
 
-export function label(id: string): Label {
+let gensym: 0;
+export function label(id?: string): Label {
+    if(id === undefined) {
+        return Symbol(gensym++) as Label;
+    }
     return Symbol(id) as Label;
 }
 
@@ -217,3 +221,10 @@ export function parent(branchNode: BranchNode): BlameNode {
     return branchNode.parent;
 }
 
+export function root(node: BlameNode): RootNode {
+    let result: BlameNode = node;
+    while(!isRoot(result)) {
+        result = result.parent;
+    }
+    return result;
+}

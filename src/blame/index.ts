@@ -1,5 +1,6 @@
 export {
     BlameNode,
+    RootNode,
     ApplicationNodes,
     label,
     makeRootNode,
