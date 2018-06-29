@@ -63,6 +63,6 @@ export const Base = {
     negative: T.makeBaseType("negative", val => isNumber(val) && val < 0),
     true: T.makeBaseType("true", val => isBoolean(val) && val),
     false: T.makeBaseType("false", val => isBoolean(val) && !val),
-    any: T.makeBaseType("never", _ => true), // another way to implement any
+    any: T.makeBaseType("any", _ => true), // another way to implement any
     never: T.makeBaseType("never", _ => false),
 }
