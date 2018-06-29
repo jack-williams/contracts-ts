@@ -73,28 +73,48 @@ function checkBase<X>(v: X, p: B.BlameNode, type: T.BaseType): X {
     return type.spec(v) ? v : B.blame(v, p, handleBlame);
 }
 
+/**
+ * Apply a function contract to a value.
+ *
+ * We try to be as faithful to the paper with a few caveats enforced
+ * on us. The formalism allows function contracts to be applied to any
+ * value; if you want to check a value /is/ a function then a base
+ * contract can be used. However we cannot apply proxies (function
+ * wrappers) to primitive values. Consequently if a function contract
+ * is applied to a primitive then the function just behaves as the
+ * identity.
+ *
+ * For traditional function contract use an AND contract.
+ *
+ * A -> B === T.and(Base.function, T.fun([A], B))
+ *
+ * @param v
+ * @param p
+ * @param type
+ */
 function checkFunction<X>(v: X, p: B.BlameNode, type: T.FunctionType): X {
-    if (isFunction(v) || isObject(v)) {
-        const makeContext = () => B.makeAppNodes(p, type.argumentTypes.length);
-        const argHandler = <X>(ctx: B.ApplicationNodes, args: X[]) => {
-            /*
-              Do not wrap the arguments if the arity check
-              failed. Technically we do not need to wrap the return
-              type as it cannot be blamed, but the machinery to do
-              this conditional wrapping can make things messy.
-            */
-            if (args.length > type.argumentTypes.length) {
-                return B.blame(args, ctx.dom[type.argumentTypes.length], handleBlame);
-            }
-            if (args.length < type.argumentTypes.length) {
-                return B.blame(args, ctx.dom[args.length], handleBlame);
-            }
-            return args.map((v, n) => check(v, ctx.dom[n], type.argumentTypes[n]));
-        }
-        const returnHandler = <X>(ctx: B.ApplicationNodes, v: X) => check(v, ctx.cod, type.returnType);
-        return M.createFunctionMonitor(v, makeContext, argHandler, returnHandler);
+    if (!isFunction(v) && !isObject(v)) {
+        return v;
     }
-    return v;
+    const makeContext = () => B.makeAppNodes(p, type.argumentTypes.length);
+    const argHandler = <X>(ctx: B.ApplicationNodes, args: X[]) => {
+        /*
+          Do not wrap the arguments if the arity check
+          failed. Technically we do not need to wrap the return
+          type as it cannot be blamed, but the machinery to do
+          this conditional wrapping can make things messy.
+        */
+        if (args.length > type.argumentTypes.length) {
+            return B.blame(args, ctx.dom[type.argumentTypes.length], handleBlame);
+        }
+        if (args.length < type.argumentTypes.length) {
+            return B.blame(args, ctx.dom[args.length], handleBlame);
+        }
+        return args.map((v, n) => check(v, ctx.dom[n], type.argumentTypes[n]));
+    }
+    const returnHandler = <X>(ctx: B.ApplicationNodes, v: X) =>
+        check(v, ctx.cod, type.returnType);
+    return M.createFunctionMonitor(v, makeContext, argHandler, returnHandler);
 }
 
 /**
@@ -102,6 +122,10 @@ function checkFunction<X>(v: X, p: B.BlameNode, type: T.FunctionType): X {
  * branches.
  *
  * Left is checked before right, but this should not matter.
+ &
+ * @param v
+ * @param p
+ * @param type
  */
 function checkBranching<B extends T.BranchKind, X>(v: X, p: B.BlameNode, type: T.BranchType<B>): X {
     const [l, r] = B.makeBranchNodes(type.kind, p);
