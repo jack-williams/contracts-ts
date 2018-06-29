@@ -1,9 +1,10 @@
 {
     "name": "contracts-ts",
     "version": "0.0.1",
-    "description": "Contracts for Higher-order Types",
+    "description": "Contracts for Higher-order Intersection and Union",
     "main": "dist/index.js",
     "scripts": {
+        "build": "node node_modules/typescript/bin/tsc",
         "test": "node node_modules/mocha/bin/mocha dist/**/*.spec.js"
     },
     "repository": {
@@ -18,9 +19,10 @@
     },
     "homepage": "https://github.com/jack-williams/contracts-ts#readme",
     "devDependencies": {
-        "@types/chai": "latest",
-        "@types/mocha": "latest",
-        "chai": "latest",
-        "mocha": "latest"
+        "typescript": "2.9.2",
+        "@types/chai": "4.1.3",
+        "@types/mocha": "5.2.0",
+        "chai": "4.1.2",
+        "mocha": "5.1.1"
     }
 }
