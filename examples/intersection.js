@@ -155,7 +155,7 @@ try {
 
 const evenThenTrue = Type.and(Base.function, Type.fun([Base.even], Base.true));
 const oddThenFalse = Type.and(Base.function, Type.fun([Base.odd], Base.false));
-const stringThenNtoTo = Type.and(Base.function, Type.fun([Base.string], numToNum));
+const stringThenNtoN = Type.and(Base.function, Type.fun([Base.string], numToNum));
 
 const mega = Type.intersection(
     trueThenNumber,
@@ -165,7 +165,7 @@ const mega = Type.intersection(
             evenThenTrue,
             Type.intersection(
                 oddThenFalse,
-                stringThenNtoTo
+                stringThenNtoN
            )
         )
     )
