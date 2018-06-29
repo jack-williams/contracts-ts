@@ -148,3 +148,60 @@ try {
 } catch (e) {
     console.log(e);
 }
+
+/*
+ * Nested intersection
+ */
+
+const evenThenTrue = Type.and(Base.function, Type.fun([Base.even], Base.true));
+const oddThenFalse = Type.and(Base.function, Type.fun([Base.odd], Base.false));
+const stringThenNtoTo = Type.and(Base.function, Type.fun([Base.string], numToNum));
+
+const mega = Type.intersection(
+    trueThenNumber,
+    Type.intersection(
+        falseThenString,
+        Type.intersection(
+            evenThenTrue,
+            Type.intersection(
+                oddThenFalse,
+                stringThenNtoTo
+           )
+        )
+    )
+);
+
+console.log(mega);
+
+function bigSwitch(x) {
+    switch (typeof x) {
+    case "boolean": return x ? 1 : "hello world";
+    case "number": return x % 2 === 0;
+    case "string": return y => y + x.length;
+    }
+}
+
+bigSwitch = contract.assert(bigSwitch, "nested intersection", mega);
+
+console.log("bigSwitch(true): " + bigSwitch(true));
+console.log("bigSwitch(false): " + bigSwitch(false));
+console.log("bigSwitch(0): " + bigSwitch(0));
+console.log("bigSwitch(1): " + bigSwitch(1));
+console.log("bigSwitch(\"a long string\")(29): " + bigSwitch("a long string")(29));
+
+try {
+    // Passing an undefined that does not satisfy any of the domain
+    // types, yielding negative blame.
+    bigSwitch(undefined);
+} catch (e) {
+    console.log(e);
+}
+
+try {
+    // Passing a string selects the overload String -> Number ->
+    // Number, however we supply a string as the second argument so
+    // negative blame is raised.
+    bigSwitch("a string")("another string");
+} catch (e) {
+    console.log(e);
+}
