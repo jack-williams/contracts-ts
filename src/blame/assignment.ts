@@ -98,7 +98,7 @@ const setBlame = () => true;
  * - dom_0/cod_1/dom_2
  *
  * This makes it fast to check if there is some extension of a path
- * has been blame, which is precisely what we need for intersection
+ * has been blamed, which is precisely what we need for intersection
  * and union types.
  *
  * @param node The blamed node -- mutates its state in place.
