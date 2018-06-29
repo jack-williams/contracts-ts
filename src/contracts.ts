@@ -7,9 +7,9 @@ import * as B from './blame';
 /**
  * Apply a contract to value.
  *
- * @param v
- * @param label
- * @param type
+ * @param v The subject of the contract
+ * @param label An optional string descriptor for the blame label
+ * @param type The contract type
  */
 export function assert<X>(v: X, type: T.ContractType): X;
 export function assert<X>(v: X, label: string, type: T.ContractType): X;
@@ -24,10 +24,17 @@ export function assert<X>(v: X, labelOrType: string | T.ContractType, type?: T.C
 
 }
 
+/**
+ * Check a value `v` against contract `type` with blame node `p`.
+ *
+ * @param v
+ * @param p
+ * @param type
+ */
 function check<X>(v: X, p: B.BlameNode, type: T.ContractType): X {
     switch (type.kind) {
         case T.TypeKind.Base:
-            return checkFlat(v, p, type);
+            return checkBase(v, p, type);
 
         case T.TypeKind.Function:
             return checkFunction(v, p, type);
@@ -52,12 +59,18 @@ function handleBlame(p: B.RootNode): void {
 
 }
 
-function checkFlat<X>(v: X, p: B.BlameNode, type: T.BaseType): X {
-    if (type.spec(v)) {
-        return v;
-    }
-    B.blame(p, handleBlame);
-    return v;
+/**
+ * Apply a base contract to a value.
+ *
+ * Applies the predicate to the value. If the predicate returns false,
+ * try to assign blame to the node.
+ *
+ * @param v
+ * @param p
+ * @param type
+ */
+function checkBase<X>(v: X, p: B.BlameNode, type: T.BaseType): X {
+    return type.spec(v) ? v : B.blame(v, p, handleBlame);
 }
 
 function checkFunction<X>(v: X, p: B.BlameNode, type: T.FunctionType): X {
@@ -71,12 +84,10 @@ function checkFunction<X>(v: X, p: B.BlameNode, type: T.FunctionType): X {
               this conditional wrapping can make things messy.
             */
             if (args.length > type.argumentTypes.length) {
-                B.blame(ctx.dom[type.argumentTypes.length], handleBlame);
-                return args;
+                return B.blame(args, ctx.dom[type.argumentTypes.length], handleBlame);
             }
             if (args.length < type.argumentTypes.length) {
-                B.blame(ctx.dom[args.length], handleBlame);
-                return args;
+                return B.blame(args, ctx.dom[args.length], handleBlame);
             }
             return args.map((v, n) => check(v, ctx.dom[n], type.argumentTypes[n]));
         }

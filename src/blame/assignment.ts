@@ -128,10 +128,9 @@ function assign(node: BlameNode): boolean {
     return resolve(blamePath(node));
 }
 
-export function blame<R>(node: BlameNode, withResolution: (p: RootNode) => void)
-    : void {
-    const assignment = assign(node);
-    if (assignment) {
+export function blame<X>(value: X, node: BlameNode, withResolution: (p: RootNode) => void): X {
+    if (assign(node)) {
         withResolution(root(node));
     }
+    return value;
 }
