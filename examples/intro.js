@@ -1,6 +1,10 @@
-const type = require('../dist/contractTypes.js');
-const contract = require('../dist/contracts.js');
-const Base = require('../dist/base.js').Base;
+/*
+ * Example from the introduction in the paper.
+ */
+
+const contract = require('../dist/');
+const Base = contract.Base;
+const Type = contract.Type; 
 
 function f(x) {
     if(typeof x === 'boolean') {
@@ -9,12 +13,12 @@ function f(x) {
     return x*10;
 }
 
-const stringOrBoolean = type.union(Base.string, Base.boolean);
-const booleanToSorB = type.and(Base.function, type.fun([Base.boolean], stringOrBoolean));
-const numToNum = type.and(Base.function, type.fun([Base.number], Base.number));
+const stringOrBoolean = Type.union(Base.string, Base.boolean);
+const booleanToSorB = Type.and(Base.function, Type.fun([Base.boolean], stringOrBoolean));
+const numToNum = Type.and(Base.function, Type.fun([Base.number], Base.number));
 
 // Wrap the function
-f = contract.assert(f, type.intersection(booleanToSorB, numToNum));
+f = contract.assert(f, Type.intersection(booleanToSorB, numToNum));
 
 // Try some legal fuction calls
 console.log("f(true): " + f(true));
@@ -47,7 +51,7 @@ function fBad(x) {
     return "I should be a number";
 }
 
-f = contract.assert(fBad, type.intersection(booleanToSorB, numToNum));
+f = contract.assert(fBad, Type.intersection(booleanToSorB, numToNum));
 
 try {
     // Positive blame because the context supplied a boolean so it
