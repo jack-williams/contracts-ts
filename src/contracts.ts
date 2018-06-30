@@ -52,9 +52,9 @@ function check<X>(v: X, p: B.BlameNode, type: T.ContractType): X {
 function handleBlame(p: B.RootNode): void {
     const stack = new Error().stack;
     if (stack) {
-        console.log(stack.split('\n')[2]);
+        // console.log(stack.split('\n')[2]);
     }
-    console.log(p);
+    // console.log(p);
     throw new Error("blame " + (p.info.charge ? "pos" : "neg"));
 
 }
