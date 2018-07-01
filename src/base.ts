@@ -8,7 +8,7 @@ import {
     Top,
 } from "./common";
 
-import * as T from "./ContractTypes";
+import * as T from "./contractTypes";
 
 /**
  * Number predicate on values. Does not count NaN, +Infinity, and
@@ -57,12 +57,12 @@ export const Base = {
     string: T.makeBaseType("string", isString),
     object: T.makeBaseType("object", isObject),
     function: T.makeBaseType("function", isFunction),
-    even: T.makeBaseType("even", val => isNumber(val) && val % 2 === 0),
-    odd: T.makeBaseType("odd", val => isNumber(val) && val % 2 !== 0),
-    positive: T.makeBaseType("positive", val => isNumber(val) && val > 0),
-    negative: T.makeBaseType("negative", val => isNumber(val) && val < 0),
-    true: T.makeBaseType("true", val => isBoolean(val) && val),
-    false: T.makeBaseType("false", val => isBoolean(val) && !val),
-    any: T.makeBaseType("any", _ => true), // another way to implement any
-    never: T.makeBaseType("never", _ => false),
+    even: T.makeBaseType("even", (val: Top) => isNumber(val) && val % 2 === 0),
+    odd: T.makeBaseType("odd", (val: Top) => isNumber(val) && val % 2 !== 0),
+    positive: T.makeBaseType("positive", (val: Top) => isNumber(val) && val > 0),
+    negative: T.makeBaseType("negative", (val: Top) => isNumber(val) && val < 0),
+    true: T.makeBaseType("true", (val: Top) => isBoolean(val) && val),
+    false: T.makeBaseType("false", (val: Top) => isBoolean(val) && !val),
+    any: T.makeBaseType("any", (_: any) => true), // another way to implement any
+    never: T.makeBaseType("never", (_: any) => false),
 }
