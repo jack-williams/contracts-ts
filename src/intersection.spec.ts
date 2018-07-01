@@ -23,6 +23,7 @@ const ifThenNumberElseString = Type.intersection(trueThenNumber, falseThenString
 const evenThenTrue = Type.and(Base.function, Type.fun([Base.even], Base.true));
 const oddThenFalse = Type.and(Base.function, Type.fun([Base.odd], Base.false));
 const stringThenNtoN = Type.and(Base.function, Type.fun([Base.string], numToNum));
+const objToObj = Type.and(Base.function, Type.fun([Base.object], Base.object));
 
 const PositiveBlame = new Error("Positive");
 const NegativeBlame = new Error("Negative");
@@ -120,7 +121,10 @@ describe("Intersection", () => {
                         evenThenTrue,
                         Type.intersection(
                             oddThenFalse,
-                            stringThenNtoN
+                            Type.intersection(
+                                stringThenNtoN,
+                                objToObj
+                            )
                         )
                     )
                 )
@@ -131,6 +135,7 @@ describe("Intersection", () => {
                 case "boolean": return x ? 1 : "hello world";
                 case "number": return x % 2 === 0;
                 case "string": return (y: any) => y + x.length;
+                default: "not found";
             }
         }
 
@@ -151,6 +156,10 @@ describe("Intersection", () => {
 
         it("should throw when supplying non-number to string overload return function", () => {
             expect(() => bigSwitchWrapped("a string")("another string")).to.throw(NegativeBlame);
+        });
+
+        it("should throw when testing default clause", () => {
+            expect(() => bigSwitchWrapped({})).to.throw(PositiveBlame);
         });
     });
 });
