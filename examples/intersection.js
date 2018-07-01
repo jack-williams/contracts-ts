@@ -172,8 +172,6 @@ const mega =
           )
       );
 
-console.log(mega);
-
 function bigSwitch(x) {
     switch (typeof x) {
     case "boolean": return x ? 1 : "hello world";

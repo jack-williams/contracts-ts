@@ -24,6 +24,8 @@ import {
     matchingElimination
 } from "./contextTracking";
 
+import { reportError } from "./reporting";
+
 /**
  * Resolve blame for a positive branch.
  *
@@ -128,9 +130,16 @@ function assign(node: BlameNode): boolean {
     return resolve(blamePath(node));
 }
 
-export function blame<X>(value: X, node: BlameNode, withResolution: (p: RootNode) => void): X {
-    if (assign(node)) {
-        withResolution(root(node));
+export function blame<X>(
+    value: X,
+    node: BlameNode,
+    message: string,
+    withResolution: (root: RootNode, errorString: string) => void
+): X {
+    const rootBlamed = assign(node);
+    if (rootBlamed) {
+        const rootNode = root(node);
+        withResolution(rootNode, reportError(rootNode, message));
     }
     return value;
 }

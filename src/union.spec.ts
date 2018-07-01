@@ -14,7 +14,21 @@ const unionFunction = Type.union(booleanToboolean, booleanToNum);
 const booleanOrNumber = Type.union(Base.boolean, Base.number);
 const unionReturn = Type.and(Base.function, Type.fun([Base.boolean], booleanOrNumber));
 
+const PositiveBlame = new Error("Positive");
+const NegativeBlame = new Error("Negative");
+
 describe("Union", () => {
+    before(() => {
+        // Setup the handler to return blame charges. This lets us check we
+        // blame the right party in the unit tests.
+        contract.setHandler((root: contract.RootNode) => {
+            if (root.info.charge) {
+                throw PositiveBlame;
+            }
+            throw NegativeBlame
+        });
+    })
+
     function flipflop(x: any) {
         if (x) return 1;
         return x;
@@ -31,19 +45,19 @@ describe("Union", () => {
         it("should throw when applied twice", () => {
             const flipflopWrapped = contract.assert(flipflop, "flipflop", unionFunction);
             expect(() => flipflopWrapped(true)).to.not.throw();
-            expect(() => flipflopWrapped(false)).to.throw();
+            expect(() => flipflopWrapped(false)).to.throw(PositiveBlame);
         });
 
         it("should throw when applied twice (in other order)", () => {
             const flipflopWrapped = contract.assert(flipflop, "flipflop", unionFunction);
             expect(() => flipflopWrapped(false)).to.not.throw();
-            expect(() => flipflopWrapped(true)).to.throw();
+            expect(() => flipflopWrapped(true)).to.throw(PositiveBlame);
         });
 
         it("should throw when given any wrong input", () => {
             const flipflopWrapped = contract.assert(flipflop, "flipflop", unionFunction);
-            expect(() => flipflopWrapped(0)).to.throw();
-            expect(() => flipflopWrapped("hello")).to.throw();
+            expect(() => flipflopWrapped(0)).to.throw(NegativeBlame);
+            expect(() => flipflopWrapped("hello")).to.throw(NegativeBlame);
         });
 
     });

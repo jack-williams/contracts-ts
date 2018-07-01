@@ -89,3 +89,50 @@ export function union(left: ContractType, right: ContractType): UnionType {
 export function and(left: ContractType, right: ContractType): AndType {
     return makeBranchType(TypeKind.And, left, right);
 }
+
+
+// Pretty Printing
+
+function baseToString(type: BaseType): string {
+    return type.description;
+}
+
+function functionToSimpleObj(type: FunctionType): object {
+    const args = type.argumentTypes.map(typeToSimpleObj);
+    const ret = typeToSimpleObj(type.returnType);
+    return { args, ret };
+}
+
+function branchingToSimpleObj(type: BranchType<BranchKind>): object {
+    const left = typeToSimpleObj(type.left);
+    const right = typeToSimpleObj(type.right);
+    let branch: string;
+    switch (type.kind) {
+        case TypeKind.And: branch = "and"; break;
+        case TypeKind.Intersection: branch = "intersection"; break;
+        case TypeKind.Union: branch = "union"; break;
+    }
+    return { branch: branch!, left, right };
+}
+
+function typeToSimpleObj(type: ContractType): any {
+    switch (type.kind) {
+        case TypeKind.Base:
+            return baseToString(type);
+
+        case TypeKind.Function:
+            return functionToSimpleObj(type)
+
+        case TypeKind.Intersection:
+        case TypeKind.Union:
+        case TypeKind.And:
+            return branchingToSimpleObj(type);
+
+        case TypeKind.Any:
+            return "any";
+    }
+}
+
+export function typeToString(type: ContractType): string {
+    return JSON.stringify(typeToSimpleObj(type), undefined, 2);
+}

@@ -1,8 +1,8 @@
-import { BranchKind } from "../contractTypes";
+import { BranchKind, ContractType } from "../contractTypes";
 
 import * as Context from "./contextTracking"
 
-const enum Direction {
+export const enum Direction {
     Left,
     Right
 }
@@ -47,10 +47,12 @@ interface UnlinkedBlameNodeInfo {
 
 interface UnlinkedRootNodeInfo extends UnlinkedBlameNodeInfo {
     label: Label;
+    type: ContractType;
 }
 
 interface RootNodeInfo extends BlameNodeInfo {
     label: Label;
+    type: ContractType
 }
 
 interface UnlinkedBranchNodeInfo extends UnlinkedBlameNodeInfo {
@@ -84,26 +86,27 @@ export type BlameNode = RootNode | BranchNode;
 
 let gensym: number = 0;
 export function label(id?: string): Label {
-    if(id === undefined) {
+    if (id === undefined) {
         return Symbol(gensym++) as Label;
     }
     return Symbol(id) as Label;
 }
 
-function initRootNodeInfo(label: Label, charge: Charge): UnlinkedRootNodeInfo {
+function initRootNodeInfo(label: Label, charge: Charge, type: ContractType): UnlinkedRootNodeInfo {
     const info: UnlinkedRootNodeInfo = {
         label,
+        type,
         negate: undefined,
         charge,
         blameState: Context.initRouteMap<boolean>(),
-        contextTracker: Context.initRouteMap<number>()
+        contextTracker: Context.initRouteMap<number>(),
     };
     return info;
 }
 
-function makeRootNodeInfo(label: Label): RootNodeInfo {
-    const pos = initRootNodeInfo(label, positive);
-    const neg = initRootNodeInfo(label, negative);
+function makeRootNodeInfo(label: Label, type: ContractType): RootNodeInfo {
+    const pos = initRootNodeInfo(label, positive, type);
+    const neg = initRootNodeInfo(label, negative, type);
     pos.negate = neg;
     neg.negate = pos;
     // Linking complete
@@ -118,7 +121,7 @@ function initBranchNodeInfo(type: BranchKind, charge: Charge, direction: Directi
         direction,
         charge,
         blameState: Context.initRouteMap<boolean>(),
-        contextTracker: Context.initRouteMap<number>()
+        contextTracker: Context.initRouteMap<number>(),
     };
     return info;
 }
@@ -144,8 +147,8 @@ function makeRootNodeFull(info: RootNodeInfo, path: BlamePath): BlameNode {
     return { kind: NodeKind.Root, info, path };
 }
 
-export function makeRootNode(label: Label): BlameNode {
-    return makeRootNodeFull(makeRootNodeInfo(label), []);
+export function makeRootNode(label: Label, type: ContractType): BlameNode {
+    return makeRootNodeFull(makeRootNodeInfo(label, type), []);
 }
 
 function makeBranchNode(parent: BlameNode, info: BranchNodeInfo, path: BlamePath): BlameNode {
@@ -223,7 +226,7 @@ export function parent(branchNode: BranchNode): BlameNode {
 
 export function root(node: BlameNode): RootNode {
     let result: BlameNode = node;
-    while(!isRoot(result)) {
+    while (!isRoot(result)) {
         result = result.parent;
     }
     return result;

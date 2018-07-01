@@ -24,7 +24,21 @@ const evenThenTrue = Type.and(Base.function, Type.fun([Base.even], Base.true));
 const oddThenFalse = Type.and(Base.function, Type.fun([Base.odd], Base.false));
 const stringThenNtoN = Type.and(Base.function, Type.fun([Base.string], numToNum));
 
+const PositiveBlame = new Error("Positive");
+const NegativeBlame = new Error("Negative");
+
 describe("Intersection", () => {
+    before(() => {
+        // Setup the handler to return blame charges. This lets us check we
+        // blame the right party in the unit tests.
+        contract.setHandler((root: contract.RootNode) => {
+            if (root.info.charge) {
+                throw PositiveBlame;
+            }
+            throw NegativeBlame
+        });
+    })
+
     describe("with higher-order overload", () => {
         function impl(f: any) {
             const result = f(4);
@@ -49,7 +63,7 @@ describe("Intersection", () => {
 
         const implBad = contract.assert(badImpl, functionType);
         it("should throw when applying the input to a bad argument", () => {
-            expect(() => implBad((x: any) => x < 100)).to.throw();
+            expect(() => implBad((x: any) => x < 100)).to.throw(PositiveBlame);
         });
     });
 
@@ -74,8 +88,8 @@ describe("Intersection", () => {
         });
 
         it("should throw when second application violates domain", () => {
-            expect(() => plusOrNegateWrapped(1)(true)).to.throw();
-            expect(() => plusOrNegateWrapped(true)(1)).to.throw();
+            expect(() => (plusOrNegateWrapped(1)(true))).to.throw(NegativeBlame);
+            expect(() => (plusOrNegateWrapped("1")(1))).to.throw(NegativeBlame);
         });
     });
 
@@ -91,8 +105,8 @@ describe("Intersection", () => {
         });
 
         it("should throw when given non-boolean", () => {
-            expect(() => wrappedConditional(0)).to.throw();
-            expect(() => wrappedConditional("true")).to.throw();
+            expect(() => wrappedConditional(0)).to.throw(NegativeBlame);
+            expect(() => wrappedConditional("true")).to.throw(NegativeBlame);
         });
     });
 
@@ -136,7 +150,7 @@ describe("Intersection", () => {
         });
 
         it("should throw when supplying non-number to string overload return function", () => {
-            expect(() => bigSwitchWrapped("a string")("another string")).to.throw();
+            expect(() => bigSwitchWrapped("a string")("another string")).to.throw(NegativeBlame);
         });
     });
 });

@@ -15,10 +15,10 @@ export function assert<X>(v: X, type: T.ContractType): X;
 export function assert<X>(v: X, label: string, type: T.ContractType): X;
 export function assert<X>(v: X, labelOrType: string | T.ContractType, type?: T.ContractType): X {
     if (typeof labelOrType === "string" && type !== undefined) {
-        return check(v, B.makeRootNode(B.label(labelOrType)), type);
+        return check(v, B.makeRootNode(B.label(labelOrType), type), type);
     }
     if (typeof labelOrType === "object") {
-        return check(v, B.makeRootNode(B.label()), labelOrType);
+        return check(v, B.makeRootNode(B.label(), labelOrType), labelOrType);
     }
     return Debug.fail("Illegal parameters to contract");
 
@@ -49,15 +49,13 @@ function check<X>(v: X, p: B.BlameNode, type: T.ContractType): X {
     }
 }
 
-function handleBlame(p: B.RootNode): void {
-    const stack = new Error().stack;
-    if (stack) {
-        // console.log(stack.split('\n')[2]);
-    }
-    // console.log(p);
-    throw new Error("blame " + (p.info.charge ? "pos" : "neg"));
+let handleBlame: (root: B.RootNode, errorString: string) => void =
+    (root, errorString) => { throw ("\n" + errorString + "\n"); }
 
+export function setHandler(handler: (root: B.RootNode, errorString: string) => void): void {
+    handleBlame = handler;
 }
+
 
 /**
  * Apply a base contract to a value.
@@ -70,7 +68,8 @@ function handleBlame(p: B.RootNode): void {
  * @param type
  */
 function checkBase<X>(v: X, p: B.BlameNode, type: T.BaseType): X {
-    return type.spec(v) ? v : B.blame(v, p, handleBlame);
+    const message = `Value not of expected type ${type.description}, received ${typeof v}.`;
+    return type.spec(v) ? v : B.blame(v, p, message, handleBlame);
 }
 
 /**
@@ -105,10 +104,12 @@ function checkFunction<X>(v: X, p: B.BlameNode, type: T.FunctionType): X {
           this conditional wrapping can make things messy.
         */
         if (args.length > type.argumentTypes.length) {
-            return B.blame(args, ctx.dom[type.argumentTypes.length], handleBlame);
+            const message = `Expecting ${type.argumentTypes.length} arguments, received ${args.length}.`;
+            return B.blame(args, ctx.dom[type.argumentTypes.length], message, handleBlame);
         }
         if (args.length < type.argumentTypes.length) {
-            return B.blame(args, ctx.dom[args.length], handleBlame);
+            const message = `Expecting ${type.argumentTypes.length} arguments, received ${args.length}.`;
+            return B.blame(args, ctx.dom[args.length], message, handleBlame);
         }
         return args.map((v, n) => check(v, ctx.dom[n], type.argumentTypes[n]));
     }

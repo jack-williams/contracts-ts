@@ -4,7 +4,7 @@ import * as tracking from './tracking'
 import * as types from '../contractTypes';
 
 describe("Blame Negation", () => {
-    const p = tracking.makeRootNode(tracking.label("p"));
+    const p = tracking.makeRootNode(tracking.label("p"), types.intersection(types.any, types.any));
     const [pL, pR] = tracking.makeBranchNodes(types.TypeKind.Intersection, p);
 
     it("should complement root nodes", () => {

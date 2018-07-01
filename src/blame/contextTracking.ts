@@ -4,7 +4,7 @@ import { Top } from "../common";
  * Kinds of path elements, corresponding to the sub-contracts created
  * when wrapping function.
  */
-const enum RouteKind {
+export const enum RouteKind {
     Domain,
     Codomain
 }
