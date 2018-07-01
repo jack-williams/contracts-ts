@@ -183,6 +183,14 @@ function makeBranchNode(parent: BlameNode, info: BranchNodeInfo, path: BlamePath
     return { kind: NodeKind.Branch, parent, info, path };
 }
 
+/**
+ * Create the blame nodes to attach to branch sub-contracts. In the
+ * paper this is done explicitly in the reduction rules at each
+ * elimation of an intersection or union.
+ *
+ * @param type
+ * @param parent
+ */
 export function makeBranchNodes(type: BranchKind, parent: BlameNode): [BlameNode, BlameNode] {
     const [left, right] = makeBranchNodeInfo(type);
     return [makeBranchNode(parent, left, []), makeBranchNode(parent, right, [])];
@@ -193,6 +201,21 @@ export interface ApplicationNodes {
     cod: BlameNode;
 }
 
+/**
+ * Create the blame nodes to attach to domain and codomain contracts
+ * when wrapping a function. Like the paper we use the delta function
+ * to obtain the application index and use that to extend the parent
+ * blame node. Unlike the paper, each blame node retains its own
+ * context-tracker, so we don't thread the context-tracker through.
+ *
+ * The paper only handlers standard function types of argument, but
+ * here we want n-ary function types to support n-ary application. We
+ * create an additional blame node for a 'ghost' contract that get
+ * blamed if we supply too many arguments.
+ *
+ * @param p
+ * @param numberOfArgs
+ */
 export function makeAppNodes(p: BlameNode, numberOfArgs: number): ApplicationNodes {
     // Add an extra arg on the end for the case where too
     // many arguments ar supplied.
