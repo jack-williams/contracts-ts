@@ -130,6 +130,22 @@ function assign(node: BlameNode): boolean {
     return resolve(blamePath(node));
 }
 
+/**
+ * The main blame function that corresponds to the blame function in the paper.
+ * Differences with paper include:
+ * 1. The state is not an argument as the state is stored per node.
+ * 2. This function accepts an argument to handle top-level blame. In
+ * the paper this function is implicit and can be defined as:
+ *
+ * (root, _) => throw root.info.label
+ *
+ * where throw is the analogue of a blame term.
+ *
+ * @param value
+ * @param node
+ * @param message
+ * @param withResolution
+ */
 export function blame<X>(
     value: X,
     node: BlameNode,

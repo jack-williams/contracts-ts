@@ -1,6 +1,8 @@
 /*
- * Blame Error Reporting 
- */
+
+  Blame error reporting.
+
+*/
 
 import {
     BlameNode,
@@ -15,6 +17,10 @@ import { RouteInfo, RouteKind } from "./contextTracking";
 
 import { typeToString } from '../contractTypes';
 
+/**
+ * Human-readable route information.
+ * @param route
+ */
 function routeToString(route: RouteInfo): string {
     switch (route.kind) {
         case RouteKind.Domain: return "DOM";
@@ -22,6 +28,10 @@ function routeToString(route: RouteInfo): string {
     }
 }
 
+/**
+ * Serialise a blame path.
+ * @param path
+ */
 function pathToString(path: RouteInfo[]): string {
     return path.map(routeToString).join("/");
 }
@@ -36,6 +46,11 @@ function rootNodeToString(p: RootNode): string {
     return message;
 }
 
+/**
+ * Report a blame error by generating an error string.
+ * @param p
+ * @param message
+ */
 export function reportError(p: RootNode, message: string): string {
     return `${rootNodeToString(p)}
 Reason: ${message}

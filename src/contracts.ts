@@ -1,3 +1,9 @@
+/*
+
+  Core contract implementations.
+
+*/
+
 import { Debug, isFunction, isObject } from './common';
 
 import * as T from "./contractTypes";
@@ -49,9 +55,19 @@ function check<X>(v: X, p: B.BlameNode, type: T.ContractType): X {
     }
 }
 
+/**
+ * Mutable reference to the blame handler that can be changed at a
+ * later date via `setHandler`.
+ */
 let handleBlame: (root: B.RootNode, errorString: string) => void =
     (root, errorString) => { throw ("\n" + errorString + "\n"); }
 
+/**
+ * Sets the handler for blame that propagates to a top-level blame
+ * label. The callback accepts the blamed root node and a generated
+ * error message.
+ * @param handler
+ */
 export function setHandler(handler: (root: B.RootNode, errorString: string) => void): void {
     handleBlame = handler;
 }
@@ -113,8 +129,7 @@ function checkFunction<X>(v: X, p: B.BlameNode, type: T.FunctionType): X {
         }
         return args.map((v, n) => check(v, ctx.dom[n], type.argumentTypes[n]));
     }
-    const returnHandler = <X>(ctx: B.ApplicationNodes, v: X) =>
-        check(v, ctx.cod, type.returnType);
+    const returnHandler = <X>(ctx: B.ApplicationNodes, v: X) => check(v, ctx.cod, type.returnType);
     return M.createFunctionMonitor(v, makeContext, argHandler, returnHandler);
 }
 

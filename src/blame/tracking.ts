@@ -1,7 +1,16 @@
+/*
+
+  Core data-structures and functions for tracking blame.
+
+*/
+
 import { BranchKind, ContractType } from "../contractTypes";
 
 import * as Context from "./contextTracking"
 
+/**
+ * Branch direction for an intersection/union/and sub-contract.
+ */
 export const enum Direction {
     Left,
     Right
@@ -12,6 +21,9 @@ const enum NodeKind {
     Branch
 }
 
+/**
+ * Pseudo-nominal type for a blame label.
+ */
 export type Label = symbol & { __label: any };
 
 type BlamePath = Context.RouteInfo[];
@@ -31,6 +43,9 @@ export const positive: Positive = true as Positive;
 /** Negative Blame - The context is at fault */
 export const negative: Negative = false as Negative;
 
+/**
+ * Data common to all blame nodes.
+ */
 interface BlameNodeInfo {
     charge: Charge;
     negate: this;
@@ -50,6 +65,9 @@ interface UnlinkedRootNodeInfo extends UnlinkedBlameNodeInfo {
     type: ContractType;
 }
 
+/**
+ * Data specific to root (top-level) blame nodes.
+ */
 interface RootNodeInfo extends BlameNodeInfo {
     label: Label;
     type: ContractType
@@ -61,18 +79,28 @@ interface UnlinkedBranchNodeInfo extends UnlinkedBlameNodeInfo {
     type: BranchKind;
 }
 
+/**
+ * Data specific to branch nodes.
+ */
 interface BranchNodeInfo extends BlameNodeInfo {
     direction: Direction;
     flip: BranchNodeInfo;
     type: BranchKind;
 }
 
+/**
+ * Type for a root node.
+ */
 export interface RootNode {
     kind: NodeKind.Root;
     info: RootNodeInfo;
     path: BlamePath;
 }
 
+/**
+ * Type for a branch node (attached to some sub-contract of a branch
+ * type).
+ */
 export interface BranchNode {
     kind: NodeKind.Branch;
     parent: BlameNode;
@@ -194,6 +222,12 @@ export function isPositive(p: BlameNode): boolean {
 
 //// Operations
 
+/**
+ * Negate a blame node indicating that the responsibily has switch
+ * from the subject to the context. Corresponding to operation -p in
+ * the paper.
+ * @param node
+ */
 export function negate(node: BlameNode): BlameNode {
     if (isRoot(node)) {
         return makeRootNodeFull(node.info.negate, node.path);
@@ -205,11 +239,24 @@ function incNumOrUndefined(n: number | undefined): number {
     return n === undefined ? 1 : n + 1;
 }
 
+/**
+ * Return the application index for a blame node and increment the
+ * counter in the state. Corresponds to \delta in the paper, the the
+ * context-tracker is implicit in the blame node here.
+ * @param node
+ */
 function delta(node: BlameNode): number {
     const i = Context.modifyLeaf(node.info.contextTracker, incNumOrUndefined, node.path);
     return i === undefined ? 0 : i;
 }
 
+/**
+ * Extend a blame node with context information. Occurs when a node is
+ * used to wrap a function sub-contract. Corresponds to operation \gg
+ * (>>) in the paper.
+ * @param node
+ * @param context
+ */
 function extend(node: BlameNode, context: Context.RouteInfo): BlameNode {
     if (isRoot(node)) {
         return makeRootNodeFull(node.info, node.path.concat([context]));
@@ -217,6 +264,13 @@ function extend(node: BlameNode, context: Context.RouteInfo): BlameNode {
     return makeBranchNode(node.parent, node.info, node.path.concat([context]));
 }
 
+/**
+ * Return the parent of a branch node, hoisting context information in
+ * the case of nested branch types that were conceptually eliminated
+ * in the same context. Corresponds to the parent operation defined in
+ * the paper.
+ * @param branchNode
+ */
 export function parent(branchNode: BranchNode): BlameNode {
     if (isBranch(branchNode.parent) && branchNode.parent.path.length === 0) {
         return makeBranchNode(branchNode.parent.parent, branchNode.parent.info, branchNode.path);
@@ -224,6 +278,10 @@ export function parent(branchNode: BranchNode): BlameNode {
     return branchNode.parent;
 }
 
+/**
+ * Return the root of a blame node.
+ * @param node
+ */
 export function root(node: BlameNode): RootNode {
     let result: BlameNode = node;
     while (!isRoot(result)) {

@@ -1,3 +1,9 @@
+/*
+
+  Core data-structures for tracking contract elimination and use-sites.
+
+*/
+
 import { Top } from "../common";
 
 /**
