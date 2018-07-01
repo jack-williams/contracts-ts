@@ -35,9 +35,9 @@ describe("Union", () => {
         });
 
         it("should throw when applied twice (in other order)", () => {
-            const flipflopWrapped2 = contract.assert(flipflop, "flipflop", unionFunction);
-            expect(() => flipflopWrapped2(false)).to.not.throw();
-            expect(() => flipflopWrapped2(true)).to.throw();
+            const flipflopWrapped = contract.assert(flipflop, "flipflop", unionFunction);
+            expect(() => flipflopWrapped(false)).to.not.throw();
+            expect(() => flipflopWrapped(true)).to.throw();
         });
 
         it("should throw when given any wrong input", () => {
