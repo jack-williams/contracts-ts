@@ -264,7 +264,7 @@ function incNumOrUndefined(n: number | undefined): number {
 
 /**
  * Return the application index for a blame node and increment the
- * counter in the state. Corresponds to \delta in the paper, the the
+ * counter in the state. Corresponds to \delta in the paper, though
  * context-tracker is implicit in the blame node here.
  * @param node
  */
