@@ -57,6 +57,7 @@ export const Base = {
     string: T.makeBaseType("string", isString),
     object: T.makeBaseType("object", isObject),
     function: T.makeBaseType("function", isFunction),
+    undefined: T.makeBaseType("undefined", (val: Top) => val === undefined),
     even: T.makeBaseType("even", (val: Top) => isNumber(val) && val % 2 === 0),
     odd: T.makeBaseType("odd", (val: Top) => isNumber(val) && val % 2 !== 0),
     positive: T.makeBaseType("positive", (val: Top) => isNumber(val) && val > 0),
