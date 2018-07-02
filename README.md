@@ -1,4 +1,6 @@
-## `contracts-ts` --- Contracts for higher-order intersection and union.
+# `contracts-ts`
+
+Contracts for higher-order intersection and union.
 
 ### Getting started
 
