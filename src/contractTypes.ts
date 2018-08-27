@@ -5,8 +5,6 @@
 
 */
 
-import { Top } from './common';
-
 /** Descriminators for types */
 export const enum TypeKind {
     Base,
@@ -28,7 +26,7 @@ export type BranchKind = TypeKind.Intersection | TypeKind.Union | TypeKind.And;
 export interface BaseType {
     kind: TypeKind.Base;
     description: string;
-    spec: (val: Top) => boolean;
+    spec: (val: unknown) => boolean;
 }
 
 /**
@@ -81,7 +79,7 @@ export const any: AnyType = { kind: TypeKind.Any };
  * @param description
  * @param spec
  */
-export function makeBaseType(description: string, spec: (val: Top) => boolean): BaseType {
+export function makeBaseType(description: string, spec: (val: unknown) => boolean): BaseType {
     return { kind: TypeKind.Base, description, spec };
 }
 

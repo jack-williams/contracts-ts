@@ -4,8 +4,6 @@
 
 */
 
-import { Top } from "../common";
-
 /**
  * Kinds of path elements, corresponding to the sub-contracts created
  * when wrapping function.
@@ -123,7 +121,7 @@ export function makeCodomainRoute(id: number): CodomainRoute {
  * @param k Index to acces
  * @param init Function to initialise undefined indices
  */
-function getOrInitPointer<T extends IntegerMap<Top>>(
+function getOrInitPointer<T extends IntegerMap<unknown>>(
     context: T,
     k: number,
     init: () => NonNullable<T[number]>
