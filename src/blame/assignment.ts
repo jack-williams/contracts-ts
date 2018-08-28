@@ -146,16 +146,16 @@ function assign(node: BlameNode): boolean {
  * @param message
  * @param withResolution
  */
-export function blame<X>(
+export function blame<X, E>(
     value: X,
     node: BlameNode,
     message: string,
-    withResolution: (root: RootNode, errorString: string) => void
-): X {
+    withResolution: (root: RootNode, value: X, errorString: string) => X | E
+): X | E {
     const rootBlamed = assign(node);
     if (rootBlamed) {
         const rootNode = root(node);
-        withResolution(rootNode, reportError(rootNode, message));
+        return withResolution(rootNode, value, reportError(rootNode, message));
     }
     return value;
 }

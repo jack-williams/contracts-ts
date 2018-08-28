@@ -59,7 +59,7 @@ function check<X>(v: X, p: B.BlameNode, type: T.ContractType): X {
  * Mutable reference to the blame handler that can be changed at a
  * later date via `setHandler`.
  */
-let handleBlame: (root: B.RootNode, errorString: string) => void =
+let handleBlame: <X>(root: B.RootNode, value: X, errorString: string) => never =
     (root, errorString) => { throw ("\n" + errorString + "\n"); }
 
 /**
@@ -68,7 +68,7 @@ let handleBlame: (root: B.RootNode, errorString: string) => void =
  * error message.
  * @param handler
  */
-export function setHandler(handler: (root: B.RootNode, errorString: string) => void): void {
+export function setHandler(handler: <X>(root: B.RootNode, value: X, errorString: string) => never): void {
     handleBlame = handler;
 }
 
@@ -85,7 +85,7 @@ export function setHandler(handler: (root: B.RootNode, errorString: string) => v
  */
 function checkBase<X>(v: X, p: B.BlameNode, type: T.BaseType): X {
     const message = `Value not of expected type ${type.description}, received ${typeof v}.`;
-    return type.spec(v) ? v : B.blame(v, p, message, handleBlame);
+    return type.spec(v) ? v : B.blame<X,never>(v, p, message, handleBlame);
 }
 
 /**
@@ -121,11 +121,11 @@ function checkFunction<X>(v: X, p: B.BlameNode, type: T.FunctionType): X {
         */
         if (args.length > type.argumentTypes.length) {
             const message = `Expecting ${type.argumentTypes.length} arguments, received ${args.length}.`;
-            return B.blame(args, ctx.dom[type.argumentTypes.length], message, handleBlame);
+            return B.blame<X[],never>(args, ctx.dom[type.argumentTypes.length], message, handleBlame);
         }
         if (args.length < type.argumentTypes.length) {
             const message = `Expecting ${type.argumentTypes.length} arguments, received ${args.length}.`;
-            return B.blame(args, ctx.dom[args.length], message, handleBlame);
+            return B.blame<X[],never>(args, ctx.dom[args.length], message, handleBlame);
         }
         return args.map((v, n) => check(v, ctx.dom[n], type.argumentTypes[n]));
     }

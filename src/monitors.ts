@@ -1,5 +1,5 @@
-type ArgumentHandler<Context> = <X>(c: Context, args: X[]) => X[];
-type ReturnHandler<Context> = <X>(c: Context, ret: X) => X;
+type ArgumentHandler<Context, E> = <X>(c: Context, args: X[]) => (X | E)[];
+type ReturnHandler<Context, E> = <X>(c: Context, ret: X) => X | E;
 
 /**
  * Construct a function handler for a function contract. The handler
@@ -11,11 +11,11 @@ type ReturnHandler<Context> = <X>(c: Context, ret: X) => X;
  * @param argHandler
  * @param returnHandler
  */
-function makeFunctionHandler<T extends object, CTX>(
+function makeFunctionHandler<T extends object, CTX, E>(
     v: T,
     makeContext: () => CTX,
-    argHandler: ArgumentHandler<CTX>,
-    returnHandler: ReturnHandler<CTX>
+    argHandler: ArgumentHandler<CTX, E>,
+    returnHandler: ReturnHandler<CTX, E>
 ): ProxyHandler<T> {
     return {
         apply(target: T, thisArg: any, args: any[]) {
@@ -36,11 +36,11 @@ function makeFunctionHandler<T extends object, CTX>(
  * @param argHandler
  * @param returnHandler
  */
-export function createFunctionMonitor<T extends object, CTX>(
+export function createFunctionMonitor<T extends object, CTX, E>(
     v: T,
     makeContext: () => CTX,
-    argHandler: ArgumentHandler<CTX>,
-    returnHandler: ReturnHandler<CTX>
+    argHandler: ArgumentHandler<CTX, E>,
+    returnHandler: ReturnHandler<CTX, E>
 ): T {
     return new Proxy(v, makeFunctionHandler(v, makeContext, argHandler, returnHandler));
 }
