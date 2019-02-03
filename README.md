@@ -1,6 +1,6 @@
 # `contracts-ts`
 
-Contracts for higher-order intersection and union.
+Contracts for higher-order intersection and union. Read the paper behing the implementation [here](https://dl.acm.org/citation.cfm?doid=3288538.3276504)
 
 ### Getting started
 
